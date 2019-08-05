@@ -1,5 +1,6 @@
 package com.bakdata.recommender;
 
+import com.bakdata.recommender.graph.BipartiteGraph;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
