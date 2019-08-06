@@ -33,7 +33,7 @@ public class RecommenderMain implements Callable<Void> {
     public static final String RIGHT_INDEX_NAME = "rightIndex";
 
     @CommandLine.Option(names = "--application-id", required = true, description = "name of streams application")
-    private final String applicationId = "recommender";
+    private final String applicationId = "music-recommender";
 
     @CommandLine.Option(names = "--host", required = true, description = "address of host machine")
     private final String host = "localhost";
@@ -47,9 +47,9 @@ public class RecommenderMain implements Callable<Void> {
     @CommandLine.Option(names = "--schema-registry-url", required = true, description = "address of schema registry")
     private final String schemaRegistryUrl = "localhost:8081";
 
-    @CommandLine.Option(names = "--topic", defaultValue = "interactions",
+    @CommandLine.Option(names = "--topic", defaultValue = "listening-events",
             description = "name of topic with incoming interactions")
-    private final String topicName = "interactions";
+    private final String topicName = "listening-events";
 
     @Override
     public Void call() throws Exception {
@@ -153,7 +153,7 @@ public class RecommenderMain implements Callable<Void> {
     }
 
     /**
-     * Check if KafkaStreams is running by trying to get the state stores
+     * Wait for the application to change status to running
      *
      * @param streams the KafkaStreams instance
      */

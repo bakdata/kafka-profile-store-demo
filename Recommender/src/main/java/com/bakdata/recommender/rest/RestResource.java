@@ -1,8 +1,8 @@
 package com.bakdata.recommender.rest;
 
-import com.bakdata.recommender.graph.BipartiteGraph;
 import com.bakdata.recommender.RecommendationType;
-import com.bakdata.recommender.Salsa;
+import com.bakdata.recommender.algorithm.Salsa;
+import com.bakdata.recommender.graph.BipartiteGraph;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
