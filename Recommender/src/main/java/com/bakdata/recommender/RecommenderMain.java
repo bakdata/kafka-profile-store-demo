@@ -1,5 +1,7 @@
 package com.bakdata.recommender;
 
+import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
+
 import com.bakdata.recommender.avro.AdjacencyList;
 import com.bakdata.recommender.graph.BipartiteGraph;
 import com.bakdata.recommender.graph.KeyValueGraph;
@@ -11,6 +13,7 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
@@ -24,11 +27,10 @@ import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
-
+@Slf4j
 @Command(name = "recommender", mixinStandardHelpOptions = true,
         description = "Start KafkaStreams application recommender")
 public class RecommenderMain implements Callable<Void> {
-    private final Logger log = LoggerFactory.getLogger(RecommenderMain.class);
     public static final String LEFT_INDEX_NAME = "leftIndex";
     public static final String RIGHT_INDEX_NAME = "rightIndex";
 
@@ -51,7 +53,7 @@ public class RecommenderMain implements Callable<Void> {
             description = "name of topic with incoming interactions")
     private String topicName = "listening-events";
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         System.exit(new CommandLine(new RecommenderMain()).execute(args));
     }
 
@@ -74,7 +76,7 @@ public class RecommenderMain implements Callable<Void> {
                 streams.close();
                 restService.stop();
             } catch (Exception e) {
-                this.log.warn("Error in shutdown", e);
+                log.warn("Error in shutdown", e);
             }
         }));
 
@@ -103,9 +105,9 @@ public class RecommenderMain implements Callable<Void> {
      * @param streams the KafkaStreams instance
      * @return BipartiteGraph instance that represents the left and right index
      */
-    public Map<RecommendationType, BipartiteGraph> getGraph(KafkaStreams streams) {
-        Map<RecommendationType, BipartiteGraph> graphs = new EnumMap<>(RecommendationType.class);
-        for (RecommendationType type : RecommendationType.values()) {
+    public Map<RecommendationType, BipartiteGraph> getGraph(final KafkaStreams streams) {
+        final Map<RecommendationType, BipartiteGraph> graphs = new EnumMap<>(RecommendationType.class);
+        for (final RecommendationType type : RecommendationType.values()) {
             graphs.put(type, new KeyValueGraph(
                     streams.store(type.getLeftIndexName(), QueryableStoreTypes.keyValueStore()),
                     streams.store(type.getRightIndexName(),
@@ -120,7 +122,7 @@ public class RecommenderMain implements Callable<Void> {
      * @param properties the properties of the KafkaStreams application
      * @return the topology of the application
      */
-    public Topology buildTopology(Properties properties) {
+    public Topology buildTopology(final Properties properties) {
         final Map<String, String> serdeConfig = Collections.singletonMap(
                 AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
                 properties.getProperty(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG));
@@ -145,8 +147,8 @@ public class RecommenderMain implements Callable<Void> {
      * @param adjacencyListSerde serde
      * @return updated Topology
      */
-    private Topology addStateStores(Topology topology, RecommendationType type,
-            SpecificAvroSerde<AdjacencyList> adjacencyListSerde) {
+    private Topology addStateStores(final Topology topology, final RecommendationType type,
+            final SpecificAvroSerde<AdjacencyList> adjacencyListSerde) {
         return topology
                 .addStateStore(Stores.keyValueStoreBuilder(
                         Stores.inMemoryKeyValueStore(type.getLeftIndexName()),
@@ -161,12 +163,12 @@ public class RecommenderMain implements Callable<Void> {
      *
      * @param streams the KafkaStreams instance
      */
-    private void waitForKafkaStreams(KafkaStreams streams) throws Exception {
+    private void waitForKafkaStreams(final KafkaStreams streams) throws Exception {
         while (true) {
             try {
                 this.getGraph(streams);
                 return;
-            } catch (InvalidStateStoreException ignored) {
+            } catch (final InvalidStateStoreException ignored) {
                 // store not yet ready for querying
                 log.info("Not available");
                 Thread.sleep(1000);

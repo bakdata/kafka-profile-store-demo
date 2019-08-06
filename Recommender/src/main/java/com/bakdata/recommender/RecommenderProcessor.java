@@ -17,22 +17,22 @@ public class RecommenderProcessor extends AbstractProcessor<byte[], ListeningEve
             new EnumMap<>(RecommendationType.class);
 
     @Override
-    public void init(ProcessorContext processorContext) {
+    public void init(final ProcessorContext processorContext) {
         super.init(processorContext);
-        for (RecommendationType type : RecommendationType.values()) {
-            KeyValueStore<Long, AdjacencyList> leftIndex = (KeyValueStore<Long, AdjacencyList>) processorContext
+        for (final RecommendationType type : RecommendationType.values()) {
+            final KeyValueStore<Long, AdjacencyList> leftIndex = (KeyValueStore<Long, AdjacencyList>) processorContext
                     .getStateStore(type.getLeftIndexName());
-            KeyValueStore<Long, AdjacencyList> rightIndex = (KeyValueStore<Long, AdjacencyList>) processorContext
+            final KeyValueStore<Long, AdjacencyList> rightIndex = (KeyValueStore<Long, AdjacencyList>) processorContext
                     .getStateStore(type.getRightIndexName());
 
-            WriteableBipartiteGraph graph = new WritableKeyValueGraph(leftIndex, rightIndex);
+            final WriteableBipartiteGraph graph = new WritableKeyValueGraph(leftIndex, rightIndex);
 
             this.graphs.put(type, graph);
         }
     }
 
     @Override
-    public void process(byte[] bytes, ListeningEvent event) {
+    public void process(final byte[] bytes, final ListeningEvent event) {
         this.graphs.get(RecommendationType.ALBUM).addEdge(event.getUserId(), event.getAlbumId());
         this.graphs.get(RecommendationType.ARTIST).addEdge(event.getUserId(), event.getArtistId());
         this.graphs.get(RecommendationType.TRACK).addEdge(event.getUserId(), event.getAlbumId());

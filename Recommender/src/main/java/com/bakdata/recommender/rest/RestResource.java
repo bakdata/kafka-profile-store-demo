@@ -20,7 +20,7 @@ import javax.ws.rs.core.MediaType;
 public class RestResource {
     private final Map<RecommendationType, BipartiteGraph> graphs;
 
-    public RestResource(Map<RecommendationType, BipartiteGraph> graphs) {
+    public RestResource(final Map<RecommendationType, BipartiteGraph> graphs) {
         this.graphs = graphs;
     }
 
@@ -45,7 +45,7 @@ public class RestResource {
             @DefaultValue("100") @QueryParam("walkLength") final int walkLength,
             @DefaultValue("0.1") @QueryParam("resetProbability") final float resetProbability) {
         log.info("Request for user {} and type {}", userId, type);
-        RecommendationType recommendationType = RecommendationType.valueOf(type.toUpperCase());
+        final RecommendationType recommendationType = RecommendationType.valueOf(type.toUpperCase());
         return new Salsa(this.graphs.get(recommendationType), new Random())
                 .compute(userId, walks, walkLength, resetProbability, limit);
     }

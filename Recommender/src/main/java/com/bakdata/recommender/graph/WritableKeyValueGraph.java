@@ -8,15 +8,15 @@ public class WritableKeyValueGraph extends KeyValueGraph implements WriteableBip
     private final KeyValueStore<Long, AdjacencyList> leftIndex;
     private final KeyValueStore<Long, AdjacencyList> rightIndex;
 
-    public WritableKeyValueGraph(KeyValueStore<Long, AdjacencyList> leftIndex,
-            KeyValueStore<Long, AdjacencyList> rightIndex) {
+    public WritableKeyValueGraph(final KeyValueStore<Long, AdjacencyList> leftIndex,
+            final KeyValueStore<Long, AdjacencyList> rightIndex) {
         super(leftIndex, rightIndex);
         this.leftIndex = leftIndex;
         this.rightIndex = rightIndex;
     }
 
     @Override
-    public void addEdge(long leftNodeId, long rightNodeId) {
+    public void addEdge(final long leftNodeId, final long rightNodeId) {
         this.updateIndex(leftNodeId, rightNodeId, this.leftIndex);
         this.updateIndex(rightNodeId, leftNodeId, this.rightIndex);
     }
@@ -28,12 +28,12 @@ public class WritableKeyValueGraph extends KeyValueGraph implements WriteableBip
      * @param valueId id of the value node
      * @param index key value store index
      */
-    private void updateIndex(long keyId, long valueId, KeyValueStore<Long, AdjacencyList> index) {
-        AdjacencyList adjacencyList = this.getAdjacencyList(keyId, valueId, index);
+    private void updateIndex(final long keyId, final long valueId, final KeyValueStore<Long, AdjacencyList> index) {
+        final AdjacencyList adjacencyList = this.getAdjacencyList(keyId, valueId, index);
         index.put(keyId, adjacencyList);
     }
 
-    private AdjacencyList getAdjacencyList(Long leftId, Long rightId, KeyValueStore<Long, AdjacencyList> index) {
+    private AdjacencyList getAdjacencyList(final Long leftId, final Long rightId, final KeyValueStore<Long, AdjacencyList> index) {
         AdjacencyList currentNeighbors = index.get(leftId);
         if (currentNeighbors == null) {
             currentNeighbors = new AdjacencyList(Collections.singletonList(rightId));

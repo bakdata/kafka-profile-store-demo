@@ -23,7 +23,7 @@ public class RestService {
 
     private static final Logger log = LoggerFactory.getLogger(RestService.class);
 
-    public RestService(HostInfo hostInfo, Map<RecommendationType, BipartiteGraph> graphs) {
+    public RestService(final HostInfo hostInfo, final Map<RecommendationType, BipartiteGraph> graphs) {
         this.hostInfo = hostInfo;
         this.resource = new RestResource(graphs);
 
@@ -55,9 +55,9 @@ public class RestService {
         try {
             this.server.start();
             this.server.join();
-        } catch (SocketException e) {
+        } catch (final SocketException exception) {
             log.error("Unavailable: {} : {}", this.hostInfo.host(), this.hostInfo.port());
-            throw new Exception(e.toString());
+            throw new Exception(exception.toString());
         }
     }
 
