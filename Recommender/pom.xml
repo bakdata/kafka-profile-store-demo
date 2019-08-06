@@ -176,7 +176,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.bakdata.recommender</mainClass>
+                            <mainClass>com.bakdata.recommender.RecommenderMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

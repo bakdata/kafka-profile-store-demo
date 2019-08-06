@@ -1,5 +1,7 @@
 package com.bakdata.recommender.rest;
 
+import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
+
 import com.bakdata.recommender.RecommendationType;
 import com.bakdata.recommender.algorithm.Salsa;
 import com.bakdata.recommender.graph.BipartiteGraph;
@@ -35,13 +37,16 @@ public class RestResource {
     @GET
     @Path("/{userId}/{type}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Long> getRecommendationsForUser(@PathParam("userId") final long userId,
+    public List<Long> getRecommendationsForUser(
+            @PathParam("userId") final long userId,
             @PathParam("type") final String type,
             @DefaultValue("10") @QueryParam("limit") final int limit,
             @DefaultValue("1000") @QueryParam("walks") final int walks,
             @DefaultValue("100") @QueryParam("walkLength") final int walkLength,
             @DefaultValue("0.1") @QueryParam("resetProbability") final float resetProbability) {
-        RecommendationType recommendationType = RecommendationType.valueOf(type);
-        return new Salsa(this.graphs.get(recommendationType), new Random()).compute(userId, walks, walkLength, resetProbability, limit);
+        log.info("Request for user {} and type {}", userId, type);
+        RecommendationType recommendationType = RecommendationType.valueOf(type.toUpperCase());
+        return new Salsa(this.graphs.get(recommendationType), new Random())
+                .compute(userId, walks, walkLength, resetProbability, limit);
     }
 }

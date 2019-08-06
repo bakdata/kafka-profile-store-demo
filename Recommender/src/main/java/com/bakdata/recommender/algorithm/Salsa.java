@@ -15,10 +15,9 @@ import org.slf4j.LoggerFactory;
 
 public class Salsa {
     private final Logger log = LoggerFactory.getLogger(Salsa.class);
-
-    private final Map<Long, Count> currentLeftNodeVisits;
-    private final Map<Long, Count> currentRightNodeVisits;
-    private final Map<Long, Count> totalRightNodeVisits;
+    private final Map<Long, Integer> currentLeftNodeVisits;
+    private final Map<Long, Integer> currentRightNodeVisits;
+    private final Map<Long, Integer> totalRightNodeVisits;
     private final BipartiteGraph graph;
     private final Random random;
 
@@ -43,7 +42,7 @@ public class Salsa {
         boolean isLeftToRight = true;
 
         // Initialize seed set on left side
-        this.currentLeftNodeVisits.put(rootNode, new Count(walks));
+        this.currentLeftNodeVisits.put(rootNode, walks);
 
         // Perform forward and backward iterations between users and tweets
         for (int i = 0; i < length; i++) {
@@ -55,10 +54,10 @@ public class Salsa {
             isLeftToRight = !isLeftToRight;
         }
 
-        if (log.isDebugEnabled()) {
+        if (this.log.isDebugEnabled()) {
             // Print out results (unordered)
-            for (Map.Entry<Long, Count> rightNodeVisit : this.totalRightNodeVisits.entrySet()) {
-                log.debug("Visited {} {} times", rightNodeVisit.getKey(), rightNodeVisit.getValue());
+            for (Map.Entry<Long, Integer> rightNodeVisit : this.totalRightNodeVisits.entrySet()) {
+                this.log.debug("Visited {} {} times", rightNodeVisit.getKey(), rightNodeVisit.getValue());
             }
         }
 
@@ -73,7 +72,7 @@ public class Salsa {
      * @param rootNodeId query node's id
      * @return List of size limit with ids for recommendations as elements
      */
-    private List<Long> mapVisitsToRecommendations(Map<Long, Count> visits, int limit, long rootNodeId) {
+    private List<Long> mapVisitsToRecommendations(Map<Long, Integer> visits, int limit, long rootNodeId) {
         Collection<Long> knownNodes = new HashSet<>(this.graph.getLeftNodeNeighbors(rootNodeId));
 
         return visits.entrySet()
@@ -96,14 +95,15 @@ public class Salsa {
         int totalResets = 0;
 
         // For each left node
-        for (Entry<Long, Count> entry : this.currentLeftNodeVisits.entrySet()) {
+        for (Entry<Long, Integer> entry : this.currentLeftNodeVisits.entrySet()) {
             // Get previous visits
-            int visits = entry.getValue().get();
+            Integer visits = entry.getValue();
             int walks = 0;
             int resets = 0;
 
             // Calculate how many new walks should be performed and how many resets will happen
             for (int i = 0; i < visits; i++) {
+
                 if (this.random.nextDouble() > resetProbability) {
                     walks++;
                 } else {
@@ -120,72 +120,40 @@ public class Salsa {
                 if (!edges.isEmpty()) {
                     int randomPosition = this.random.nextInt(edges.size());
                     Long edge = edges.get(randomPosition);
-                    this.currentRightNodeVisits.get(edge).increment();
-                    this.totalRightNodeVisits.get(edge).increment();
+                    this.currentRightNodeVisits.put(edge, this.currentRightNodeVisits.getOrDefault(edge, 0) + 1);
+                    this.totalRightNodeVisits.put(edge, this.totalRightNodeVisits.getOrDefault(edge, 0) + 1);
                 }
             }
+
             // Add resets to currentLeftNodeVisits
             totalResets += resets;
         }
 
         this.currentLeftNodeVisits.clear();
-        this.currentLeftNodeVisits.put(rootNode, new Count(totalResets));
+        this.currentLeftNodeVisits.put(rootNode, totalResets);
     }
 
     /**
      * Performs a random step for every right node that is currently visited
      */
     private void rightIteration() {
-        for (Entry<Long, Count> entry : this.currentRightNodeVisits.entrySet()) {
-            Count visitCount = entry.getValue();
+        for (Entry<Long, Integer> entry : this.currentRightNodeVisits.entrySet()) {
+            Integer visits = entry.getValue();
 
             // Sample left edges for all walks
             List<Long> edges = this.graph.getRightNodeNeighbors(entry.getKey());
 
             // Perform walks back to the left side
-            for (int i = 0; i < visitCount.get(); i++) {
+            for (int i = 0; i < visits; i++) {
                 // Ignore nodes without out links
                 if (!edges.isEmpty()) {
                     int randomPosition = this.random.nextInt(edges.size());
                     long edge = edges.get(randomPosition);
-                    this.currentLeftNodeVisits.get(edge).increment();
+                    this.currentLeftNodeVisits.put(edge, this.currentLeftNodeVisits.getOrDefault(edge, 0) + 1);
                 }
             }
         }
         this.currentRightNodeVisits.clear();
     }
 
-    /**
-     * Helper class to improve the performance when updating visits
-     */
-    private class Count implements Comparable<Count> {
-        private int count = 1;
-
-        public Count(int startCount) {
-            this.count = startCount;
-        }
-
-        public void increment() {
-            ++count;
-        }
-
-        public int get() {
-            return count;
-        }
-
-        @Override
-        public int compareTo(Count count) {
-            return Integer.compare(this.count, count.get());
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof Count) {
-                Count other = (Count) obj;
-                return other.count == this.count;
-            } else {
-                return false;
-            }
-        }
-    }
 }

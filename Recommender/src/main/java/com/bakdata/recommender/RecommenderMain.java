@@ -33,23 +33,27 @@ public class RecommenderMain implements Callable<Void> {
     public static final String RIGHT_INDEX_NAME = "rightIndex";
 
     @CommandLine.Option(names = "--application-id", required = true, description = "name of streams application")
-    private final String applicationId = "music-recommender";
+    private String applicationId = "music-recommender";
 
     @CommandLine.Option(names = "--host", required = true, description = "address of host machine")
-    private final String host = "localhost";
+    private String host = "localhost";
 
     @CommandLine.Option(names = "--port", defaultValue = "8080", description = "port of REST service")
-    private final int port = 8080;
+    private int port = 8080;
 
     @CommandLine.Option(names = "--brokers", required = true, description = "address of kafka broker")
-    private final String brokers = "localhost:29092";
+    private String brokers = "localhost:29092";
 
     @CommandLine.Option(names = "--schema-registry-url", required = true, description = "address of schema registry")
-    private final String schemaRegistryUrl = "localhost:8081";
+    private String schemaRegistryUrl = "localhost:8081";
 
     @CommandLine.Option(names = "--topic", defaultValue = "listening-events",
             description = "name of topic with incoming interactions")
-    private final String topicName = "listening-events";
+    private String topicName = "listening-events";
+
+    public static void main(String[] args) {
+        System.exit(new CommandLine(new RecommenderMain()).execute(args));
+    }
 
     @Override
     public Void call() throws Exception {
@@ -164,6 +168,7 @@ public class RecommenderMain implements Callable<Void> {
                 return;
             } catch (InvalidStateStoreException ignored) {
                 // store not yet ready for querying
+                log.info("Not available");
                 Thread.sleep(1000);
             }
         }
