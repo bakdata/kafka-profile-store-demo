@@ -3,6 +3,7 @@ package com.bakdata.recommender;
 import com.bakdata.fluent_kafka_streams_tests.TestInput;
 import com.bakdata.fluent_kafka_streams_tests.junit5.TestTopologyExtension;
 import com.bakdata.recommender.avro.ListeningEvent;
+import com.bakdata.recommender.graph.BipartiteGraph;
 import com.bakdata.recommender.graph.KeyValueGraph;
 import java.time.Instant;
 import java.util.Arrays;
@@ -24,7 +25,7 @@ class RecommenderProcessorTest {
     public void testAlbumSingleInput() {
         this.testTopology.input()
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
-        EnumMap<RecommendationType, KeyValueGraph> graphMap = this.getGraphMap();
+        EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
 
         Assertions.assertEquals(Collections.singletonList(3L),
                 graphMap.get(RecommendationType.ALBUM).getLeftNodeNeighbors(1));
@@ -36,7 +37,7 @@ class RecommenderProcessorTest {
     public void testArtistSingleInput() {
         this.testTopology.input()
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
-        EnumMap<RecommendationType, KeyValueGraph> graphMap = this.getGraphMap();
+        EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
 
         Assertions.assertEquals(Collections.singletonList(2L),
                 graphMap.get(RecommendationType.ALBUM).getLeftNodeNeighbors(1));
@@ -48,7 +49,7 @@ class RecommenderProcessorTest {
     public void testTrackSingleInput() {
         this.testTopology.input()
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
-        EnumMap<RecommendationType, KeyValueGraph> graphMap = this.getGraphMap();
+        EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
 
         Assertions.assertEquals(Collections.singletonList(4L),
                 graphMap.get(RecommendationType.ALBUM).getLeftNodeNeighbors(1));
@@ -69,7 +70,7 @@ class RecommenderProcessorTest {
             testInput.add(new ListeningEvent(users[i], artists[i], album[i], track[i], Instant.now()));
         }
 
-        EnumMap<RecommendationType, KeyValueGraph> graphMap = this.getGraphMap();
+        EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
 
         Assertions.assertEquals(Arrays.asList(3L, 4L, 6L),
                 graphMap.get(RecommendationType.ALBUM).getLeftNodeNeighbors(1));
@@ -88,9 +89,9 @@ class RecommenderProcessorTest {
 
     }
 
-    private EnumMap<RecommendationType, KeyValueGraph> getGraphMap() {
-        EnumMap<RecommendationType, KeyValueGraph> graphs =
-                new EnumMap<RecommendationType, KeyValueGraph>(RecommendationType.class);
+    public EnumMap<RecommendationType, BipartiteGraph> getGraphMap() {
+        EnumMap<RecommendationType, BipartiteGraph> graphs =
+                new EnumMap<>(RecommendationType.class);
         for (RecommendationType type : RecommendationType.values()) {
             KeyValueGraph graph = new KeyValueGraph(
                     this.testTopology.getTestDriver().getKeyValueStore(type.getLeftIndexName()),
@@ -100,5 +101,6 @@ class RecommenderProcessorTest {
         }
         return graphs;
     }
+
 
 }
