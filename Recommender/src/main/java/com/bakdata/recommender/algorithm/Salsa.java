@@ -1,4 +1,4 @@
-package com.bakdata.recommender;
+package com.bakdata.recommender.algorithm;
 
 import com.bakdata.recommender.graph.BipartiteGraph;
 import java.util.Collection;
@@ -124,7 +124,6 @@ public class Salsa {
                     this.totalRightNodeVisits.get(edge).increment();
                 }
             }
-
             // Add resets to currentLeftNodeVisits
             totalResets += resets;
         }
