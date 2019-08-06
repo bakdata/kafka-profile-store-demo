@@ -1,5 +1,7 @@
 package com.bakdata.recommender;
 
+import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
+
 import com.bakdata.recommender.avro.ListeningEvent;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerializer;
@@ -7,31 +9,31 @@ import java.time.Instant;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadLocalRandom;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.producer.KafkaProducer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.Serdes;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
-public class MockProducer {
-    private static final Logger log = LoggerFactory.getLogger(MockProducer.class);
+@Slf4j
+@Command(name = "mock data producer")
+public class MockDataProducer implements Callable<Void> {
 
-    public static void main(final String[] args) throws Exception {
-        String bootstrapServers;
-        String schemaRegistryUrl;
-        String topic;
+    @CommandLine.Option(names = "--bootstrap-server", defaultValue = "localhost:29092")
+    private String bootstrapServers;
 
-        if (args.length != 3) {
-            bootstrapServers = "localhost:29092";
-            schemaRegistryUrl = "http://localhost:8081";
-            topic = "listening-events";
-        } else {
-            bootstrapServers = args[0];
-            schemaRegistryUrl = args[1];
-            topic = args[2];
-        }
+    @CommandLine.Option(names = "--schema-registry-url", defaultValue = "http://localhost:8081")
+    private String schemaRegistryUrl;
+
+    @CommandLine.Option(names = "--bootstrap-server", defaultValue = "listening-events")
+    private String topic;
+
+    @Override
+    public Void call() throws Exception {
 
         log.info("Connecting to Kafka cluster via bootstrap servers {}", bootstrapServers);
         log.info("Connecting to Confluent schema registry at {}", schemaRegistryUrl);
@@ -54,11 +56,12 @@ public class MockProducer {
                     ThreadLocalRandom.current().nextLong(300),
                     ThreadLocalRandom.current().nextLong(400),
                     Instant.now());
-            System.out.println("alds");
-            eventProducer.send(
-                    new ProducerRecord<>(topic,
-                            "", listeningEvent));
+            eventProducer.send(new ProducerRecord<>(topic, "", listeningEvent));
             Thread.sleep(100L);
         }
+    }
+
+    public static void main(final String[] args) throws Exception {
+        System.exit(new CommandLine(new MockDataProducer()).execute(args));
     }
 }
