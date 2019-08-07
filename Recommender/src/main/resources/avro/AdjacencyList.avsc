@@ -1,0 +1,14 @@
+{
+  "namespace": "com.bakdata.recommender.avro",
+  "type": "record",
+  "name": "AdjacencyList",
+  "fields": [
+    {
+      "name": "neighbors",
+      "type": {
+        "type": "array",
+        "items": "long"
+      }
+    }
+  ]
+}
