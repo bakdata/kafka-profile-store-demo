@@ -9,8 +9,8 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
-import org.junit.Test;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class RecommenderProcessorTest {
@@ -22,10 +22,10 @@ class RecommenderProcessorTest {
 
 
     @Test
-    public void testAlbumSingleInput() {
+    void testAlbumSingleInput() {
         this.testTopology.input()
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
-        EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
+        final EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
 
         Assertions.assertEquals(Collections.singletonList(3L),
                 graphMap.get(RecommendationType.ALBUM).getLeftNodeNeighbors(1));
@@ -37,40 +37,40 @@ class RecommenderProcessorTest {
     public void testArtistSingleInput() {
         this.testTopology.input()
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
-        EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
+        final EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
 
         Assertions.assertEquals(Collections.singletonList(2L),
-                graphMap.get(RecommendationType.ALBUM).getLeftNodeNeighbors(1));
+                graphMap.get(RecommendationType.ARTIST).getLeftNodeNeighbors(1));
         Assertions.assertEquals(Collections.singletonList(1L),
-                graphMap.get(RecommendationType.ALBUM).getRightNodeNeighbors(2));
+                graphMap.get(RecommendationType.ARTIST).getRightNodeNeighbors(2));
     }
 
     @Test
-    public void testTrackSingleInput() {
+    void testTrackSingleInput() {
         this.testTopology.input()
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
-        EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
+        final EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
 
         Assertions.assertEquals(Collections.singletonList(4L),
-                graphMap.get(RecommendationType.ALBUM).getLeftNodeNeighbors(1));
+                graphMap.get(RecommendationType.TRACK).getLeftNodeNeighbors(1));
         Assertions.assertEquals(Collections.singletonList(1L),
-                graphMap.get(RecommendationType.ALBUM).getRightNodeNeighbors(4));
+                graphMap.get(RecommendationType.TRACK).getRightNodeNeighbors(4));
     }
 
     @Test
-    public void testMultipleInputs() {
-        long[] users = {1, 5, 1, 6, 1};
-        long[] artists = {2, 3, 4, 5, 2};
-        long[] album = {3, 3, 4, 5, 6};
-        long[] track = {4, 8, 2, 8, 7};
+    void testMultipleInputs() {
+        final long[] users = {1, 5, 1, 6, 1};
+        final long[] artists = {2, 3, 4, 5, 2};
+        final long[] album = {3, 3, 4, 5, 6};
+        final long[] track = {4, 8, 2, 8, 7};
 
-        TestInput<String, ListeningEvent> testInput = this.testTopology.input();
+        final TestInput<String, ListeningEvent> testInput = this.testTopology.input();
 
         for (int i = 0; i < users.length; i++) {
             testInput.add(new ListeningEvent(users[i], artists[i], album[i], track[i], Instant.now()));
         }
 
-        EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
+        final EnumMap<RecommendationType, BipartiteGraph> graphMap = this.getGraphMap();
 
         Assertions.assertEquals(Arrays.asList(3L, 4L, 6L),
                 graphMap.get(RecommendationType.ALBUM).getLeftNodeNeighbors(1));
@@ -89,11 +89,11 @@ class RecommenderProcessorTest {
 
     }
 
-    public EnumMap<RecommendationType, BipartiteGraph> getGraphMap() {
-        EnumMap<RecommendationType, BipartiteGraph> graphs =
+    EnumMap<RecommendationType, BipartiteGraph> getGraphMap() {
+        final EnumMap<RecommendationType, BipartiteGraph> graphs =
                 new EnumMap<>(RecommendationType.class);
-        for (RecommendationType type : RecommendationType.values()) {
-            KeyValueGraph graph = new KeyValueGraph(
+        for (final RecommendationType type : RecommendationType.values()) {
+            final BipartiteGraph graph = new KeyValueGraph(
                     this.testTopology.getTestDriver().getKeyValueStore(type.getLeftIndexName()),
                     this.testTopology.getTestDriver().getKeyValueStore(type.getRightIndexName())
             );
