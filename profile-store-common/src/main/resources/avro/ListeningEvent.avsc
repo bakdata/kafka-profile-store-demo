@@ -1,5 +1,5 @@
 {
-  "namespace": "com.bakdata.recommender.avro",
+  "namespace": "com.bakdata.profilestore.common.avro",
   "type": "record",
   "name": "ListeningEvent",
   "fields": [

@@ -14,5 +14,12 @@
     <artifactId>common</artifactId>
     <version>1.0-SNAPSHOT</version>
 
-
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

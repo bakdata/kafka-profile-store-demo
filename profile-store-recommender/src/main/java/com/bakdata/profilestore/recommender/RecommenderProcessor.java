@@ -1,7 +1,7 @@
 package com.bakdata.profilestore.recommender;
 
+import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.recommender.avro.AdjacencyList;
-import com.bakdata.profilestore.recommender.avro.ListeningEvent;
 import com.bakdata.profilestore.recommender.graph.WritableKeyValueGraph;
 import com.bakdata.profilestore.recommender.graph.WriteableBipartiteGraph;
 import java.util.EnumMap;

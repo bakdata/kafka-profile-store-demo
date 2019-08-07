@@ -5,15 +5,17 @@
  */
 package com.bakdata.profilestore.recommender.avro;
 
+import org.apache.avro.generic.GenericArray;
 import org.apache.avro.specific.SpecificData;
+import org.apache.avro.util.Utf8;
 import org.apache.avro.message.BinaryMessageEncoder;
 import org.apache.avro.message.BinaryMessageDecoder;
 import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class AdjacencyList extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -6569887507404842614L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"AdjacencyList\",\"namespace\":\"com.bakdata.recommender.avro\",\"fields\":[{\"name\":\"neighbors\",\"type\":{\"type\":\"array\",\"items\":\"long\"}}]}");
+  private static final long serialVersionUID = -4387811912214649660L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"AdjacencyList\",\"namespace\":\"com.bakdata.profilestore.recommender.avro\",\"fields\":[{\"name\":\"neighbors\",\"type\":{\"type\":\"array\",\"items\":\"long\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -126,8 +128,8 @@ public class AdjacencyList extends org.apache.avro.specific.SpecificRecordBase i
    * Creates a new AdjacencyList RecordBuilder.
    * @return A new AdjacencyList RecordBuilder
    */
-  public static AdjacencyList.Builder newBuilder() {
-    return new AdjacencyList.Builder();
+  public static com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder newBuilder() {
+    return new com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder();
   }
 
   /**
@@ -135,11 +137,11 @@ public class AdjacencyList extends org.apache.avro.specific.SpecificRecordBase i
    * @param other The existing builder to copy.
    * @return A new AdjacencyList RecordBuilder
    */
-  public static AdjacencyList.Builder newBuilder(AdjacencyList.Builder other) {
+  public static com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder newBuilder(com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder other) {
     if (other == null) {
-      return new AdjacencyList.Builder();
+      return new com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder();
     } else {
-      return new AdjacencyList.Builder(other);
+      return new com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder(other);
     }
   }
 
@@ -148,11 +150,11 @@ public class AdjacencyList extends org.apache.avro.specific.SpecificRecordBase i
    * @param other The existing instance to copy.
    * @return A new AdjacencyList RecordBuilder
    */
-  public static AdjacencyList.Builder newBuilder(AdjacencyList other) {
+  public static com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder newBuilder(com.bakdata.profilestore.recommender.avro.AdjacencyList other) {
     if (other == null) {
-      return new AdjacencyList.Builder();
+      return new com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder();
     } else {
-      return new AdjacencyList.Builder(other);
+      return new com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder(other);
     }
   }
 
@@ -173,7 +175,7 @@ public class AdjacencyList extends org.apache.avro.specific.SpecificRecordBase i
      * Creates a Builder by copying an existing Builder.
      * @param other The existing Builder to copy.
      */
-    private Builder(AdjacencyList.Builder other) {
+    private Builder(com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder other) {
       super(other);
       if (isValidValue(fields()[0], other.neighbors)) {
         this.neighbors = data().deepCopy(fields()[0].schema(), other.neighbors);
@@ -185,7 +187,7 @@ public class AdjacencyList extends org.apache.avro.specific.SpecificRecordBase i
      * Creates a Builder by copying an existing AdjacencyList instance
      * @param other The existing instance to copy.
      */
-    private Builder(AdjacencyList other) {
+    private Builder(com.bakdata.profilestore.recommender.avro.AdjacencyList other) {
       super(SCHEMA$);
       if (isValidValue(fields()[0], other.neighbors)) {
         this.neighbors = data().deepCopy(fields()[0].schema(), other.neighbors);
@@ -207,7 +209,7 @@ public class AdjacencyList extends org.apache.avro.specific.SpecificRecordBase i
       * @param value The value of 'neighbors'.
       * @return This builder.
       */
-    public AdjacencyList.Builder setNeighbors(java.util.List<java.lang.Long> value) {
+    public com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder setNeighbors(java.util.List<java.lang.Long> value) {
       validate(fields()[0], value);
       this.neighbors = value;
       fieldSetFlags()[0] = true;
@@ -227,7 +229,7 @@ public class AdjacencyList extends org.apache.avro.specific.SpecificRecordBase i
       * Clears the value of the 'neighbors' field.
       * @return This builder.
       */
-    public AdjacencyList.Builder clearNeighbors() {
+    public com.bakdata.profilestore.recommender.avro.AdjacencyList.Builder clearNeighbors() {
       neighbors = null;
       fieldSetFlags()[0] = false;
       return this;

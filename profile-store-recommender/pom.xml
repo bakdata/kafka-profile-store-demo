@@ -16,6 +16,11 @@
     <packaging>jar</packaging>
 
     <dependencies>
+        <!-- Common -->
+        <dependency>
+            <groupId>com.bakdata.profilestore</groupId>
+            <artifactId>common</artifactId>
+        </dependency>
         <!-- Kafka -->
         <dependency>
             <groupId>org.apache.kafka</groupId>
@@ -95,6 +100,10 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-maven-plugin</artifactId>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.1.2</version>
@@ -130,25 +139,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.apache.avro</groupId>
-                <artifactId>avro-maven-plugin</artifactId>
-                <version>${avro.version}</version>
-                <executions>
-                    <execution>
-                        <phase>generate-sources</phase>
-                        <goals>
-                            <goal>schema</goal>
-                        </goals>
-                        <configuration>
-                            <sourceDirectory>${project.basedir}/src/main/resources/avro
-                            </sourceDirectory>
-                            <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
-                            <stringType>String</stringType>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.22.0</version>
             </plugin>
@@ -158,5 +148,4 @@
             </plugin>
         </plugins>
     </build>
-
 </project>

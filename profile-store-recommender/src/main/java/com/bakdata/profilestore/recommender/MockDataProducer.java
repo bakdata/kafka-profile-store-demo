@@ -1,6 +1,6 @@
 package com.bakdata.profilestore.recommender;
 
-import com.bakdata.profilestore.recommender.avro.ListeningEvent;
+import com.bakdata.profilestore.common.avro.ListeningEvent;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerializer;
 import java.time.Instant;

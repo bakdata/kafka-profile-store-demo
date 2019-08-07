@@ -3,17 +3,19 @@
  *
  * DO NOT EDIT DIRECTLY
  */
-package com.bakdata.profilestore.recommender.avro;
+package com.bakdata.profilestore.common.avro;
 
+import org.apache.avro.generic.GenericArray;
 import org.apache.avro.specific.SpecificData;
+import org.apache.avro.util.Utf8;
 import org.apache.avro.message.BinaryMessageEncoder;
 import org.apache.avro.message.BinaryMessageDecoder;
 import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class ListeningEvent extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 1010532580012980242L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"ListeningEvent\",\"namespace\":\"com.bakdata.recommender.avro\",\"fields\":[{\"name\":\"userId\",\"type\":\"long\"},{\"name\":\"artistId\",\"type\":\"long\"},{\"name\":\"albumId\",\"type\":\"long\"},{\"name\":\"trackId\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":[\"null\",{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}]}]}");
+  private static final long serialVersionUID = 8782589345629474403L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"ListeningEvent\",\"namespace\":\"com.bakdata.profilestore.common.avro\",\"fields\":[{\"name\":\"userId\",\"type\":\"long\"},{\"name\":\"artistId\",\"type\":\"long\"},{\"name\":\"albumId\",\"type\":\"long\"},{\"name\":\"trackId\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":[\"null\",{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}]}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -217,8 +219,8 @@ static {
    * Creates a new ListeningEvent RecordBuilder.
    * @return A new ListeningEvent RecordBuilder
    */
-  public static ListeningEvent.Builder newBuilder() {
-    return new ListeningEvent.Builder();
+  public static com.bakdata.profilestore.common.avro.ListeningEvent.Builder newBuilder() {
+    return new com.bakdata.profilestore.common.avro.ListeningEvent.Builder();
   }
 
   /**
@@ -226,11 +228,11 @@ static {
    * @param other The existing builder to copy.
    * @return A new ListeningEvent RecordBuilder
    */
-  public static ListeningEvent.Builder newBuilder(ListeningEvent.Builder other) {
+  public static com.bakdata.profilestore.common.avro.ListeningEvent.Builder newBuilder(com.bakdata.profilestore.common.avro.ListeningEvent.Builder other) {
     if (other == null) {
-      return new ListeningEvent.Builder();
+      return new com.bakdata.profilestore.common.avro.ListeningEvent.Builder();
     } else {
-      return new ListeningEvent.Builder(other);
+      return new com.bakdata.profilestore.common.avro.ListeningEvent.Builder(other);
     }
   }
 
@@ -239,11 +241,11 @@ static {
    * @param other The existing instance to copy.
    * @return A new ListeningEvent RecordBuilder
    */
-  public static ListeningEvent.Builder newBuilder(ListeningEvent other) {
+  public static com.bakdata.profilestore.common.avro.ListeningEvent.Builder newBuilder(com.bakdata.profilestore.common.avro.ListeningEvent other) {
     if (other == null) {
-      return new ListeningEvent.Builder();
+      return new com.bakdata.profilestore.common.avro.ListeningEvent.Builder();
     } else {
-      return new ListeningEvent.Builder(other);
+      return new com.bakdata.profilestore.common.avro.ListeningEvent.Builder(other);
     }
   }
 
@@ -268,7 +270,7 @@ static {
      * Creates a Builder by copying an existing Builder.
      * @param other The existing Builder to copy.
      */
-    private Builder(ListeningEvent.Builder other) {
+    private Builder(com.bakdata.profilestore.common.avro.ListeningEvent.Builder other) {
       super(other);
       if (isValidValue(fields()[0], other.userId)) {
         this.userId = data().deepCopy(fields()[0].schema(), other.userId);
@@ -296,7 +298,7 @@ static {
      * Creates a Builder by copying an existing ListeningEvent instance
      * @param other The existing instance to copy.
      */
-    private Builder(ListeningEvent other) {
+    private Builder(com.bakdata.profilestore.common.avro.ListeningEvent other) {
       super(SCHEMA$);
       if (isValidValue(fields()[0], other.userId)) {
         this.userId = data().deepCopy(fields()[0].schema(), other.userId);
@@ -334,7 +336,7 @@ static {
       * @param value The value of 'userId'.
       * @return This builder.
       */
-    public ListeningEvent.Builder setUserId(long value) {
+    public com.bakdata.profilestore.common.avro.ListeningEvent.Builder setUserId(long value) {
       validate(fields()[0], value);
       this.userId = value;
       fieldSetFlags()[0] = true;
@@ -354,7 +356,7 @@ static {
       * Clears the value of the 'userId' field.
       * @return This builder.
       */
-    public ListeningEvent.Builder clearUserId() {
+    public com.bakdata.profilestore.common.avro.ListeningEvent.Builder clearUserId() {
       fieldSetFlags()[0] = false;
       return this;
     }
@@ -373,7 +375,7 @@ static {
       * @param value The value of 'artistId'.
       * @return This builder.
       */
-    public ListeningEvent.Builder setArtistId(long value) {
+    public com.bakdata.profilestore.common.avro.ListeningEvent.Builder setArtistId(long value) {
       validate(fields()[1], value);
       this.artistId = value;
       fieldSetFlags()[1] = true;
@@ -393,7 +395,7 @@ static {
       * Clears the value of the 'artistId' field.
       * @return This builder.
       */
-    public ListeningEvent.Builder clearArtistId() {
+    public com.bakdata.profilestore.common.avro.ListeningEvent.Builder clearArtistId() {
       fieldSetFlags()[1] = false;
       return this;
     }
@@ -412,7 +414,7 @@ static {
       * @param value The value of 'albumId'.
       * @return This builder.
       */
-    public ListeningEvent.Builder setAlbumId(long value) {
+    public com.bakdata.profilestore.common.avro.ListeningEvent.Builder setAlbumId(long value) {
       validate(fields()[2], value);
       this.albumId = value;
       fieldSetFlags()[2] = true;
@@ -432,7 +434,7 @@ static {
       * Clears the value of the 'albumId' field.
       * @return This builder.
       */
-    public ListeningEvent.Builder clearAlbumId() {
+    public com.bakdata.profilestore.common.avro.ListeningEvent.Builder clearAlbumId() {
       fieldSetFlags()[2] = false;
       return this;
     }
@@ -451,7 +453,7 @@ static {
       * @param value The value of 'trackId'.
       * @return This builder.
       */
-    public ListeningEvent.Builder setTrackId(long value) {
+    public com.bakdata.profilestore.common.avro.ListeningEvent.Builder setTrackId(long value) {
       validate(fields()[3], value);
       this.trackId = value;
       fieldSetFlags()[3] = true;
@@ -471,7 +473,7 @@ static {
       * Clears the value of the 'trackId' field.
       * @return This builder.
       */
-    public ListeningEvent.Builder clearTrackId() {
+    public com.bakdata.profilestore.common.avro.ListeningEvent.Builder clearTrackId() {
       fieldSetFlags()[3] = false;
       return this;
     }
@@ -490,7 +492,7 @@ static {
       * @param value The value of 'timestamp'.
       * @return This builder.
       */
-    public ListeningEvent.Builder setTimestamp(java.time.Instant value) {
+    public com.bakdata.profilestore.common.avro.ListeningEvent.Builder setTimestamp(java.time.Instant value) {
       validate(fields()[4], value);
       this.timestamp = value;
       fieldSetFlags()[4] = true;
@@ -510,7 +512,7 @@ static {
       * Clears the value of the 'timestamp' field.
       * @return This builder.
       */
-    public ListeningEvent.Builder clearTimestamp() {
+    public com.bakdata.profilestore.common.avro.ListeningEvent.Builder clearTimestamp() {
       timestamp = null;
       fieldSetFlags()[4] = false;
       return this;
