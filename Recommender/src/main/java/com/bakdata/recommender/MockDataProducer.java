@@ -1,7 +1,5 @@
 package com.bakdata.recommender;
 
-import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
-
 import com.bakdata.recommender.avro.ListeningEvent;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerializer;
@@ -20,8 +18,9 @@ import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
 @Slf4j
-@Command(name = "mock data producer")
+@Command(name = "mock-data-producer")
 public class MockDataProducer implements Callable<Void> {
+    private static final long TIMEOUT = 100L;
 
     @CommandLine.Option(names = "--bootstrap-server", defaultValue = "localhost:29092")
     private String bootstrapServers;
@@ -29,39 +28,39 @@ public class MockDataProducer implements Callable<Void> {
     @CommandLine.Option(names = "--schema-registry-url", defaultValue = "http://localhost:8081")
     private String schemaRegistryUrl;
 
-    @CommandLine.Option(names = "--bootstrap-server", defaultValue = "listening-events")
+    @CommandLine.Option(names = "--topic", defaultValue = "listening-events")
     private String topic;
 
     @Override
     public Void call() throws Exception {
 
-        log.info("Connecting to Kafka cluster via bootstrap servers {}", bootstrapServers);
-        log.info("Connecting to Confluent schema registry at {}", schemaRegistryUrl);
+        log.info("Connecting to Kafka cluster via bootstrap servers {}", this.bootstrapServers);
+        log.info("Connecting to Confluent schema registry at {}", this.schemaRegistryUrl);
 
         final Properties props = new Properties();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.bootstrapServers);
 
         final Map<String, String> serdeConfig = Collections.singletonMap(
-                AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, schemaRegistryUrl);
-        final SpecificAvroSerializer<ListeningEvent> edgeSpecificAvroSerializer = new SpecificAvroSerializer<>();
-        edgeSpecificAvroSerializer.configure(serdeConfig, false);
+                AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.schemaRegistryUrl);
+        final SpecificAvroSerializer<ListeningEvent> specificAvroSerializer = new SpecificAvroSerializer<>();
+        specificAvroSerializer.configure(serdeConfig, false);
 
         final KafkaProducer<String, ListeningEvent> eventProducer = new KafkaProducer<>(props,
                 Serdes.String().serializer(),
-                edgeSpecificAvroSerializer);
+                specificAvroSerializer);
 
         while (true) {
-            ListeningEvent listeningEvent = new ListeningEvent(ThreadLocalRandom.current().nextLong(100),
+            final ListeningEvent listeningEvent = new ListeningEvent(ThreadLocalRandom.current().nextLong(100),
                     ThreadLocalRandom.current().nextLong(200),
                     ThreadLocalRandom.current().nextLong(300),
                     ThreadLocalRandom.current().nextLong(400),
                     Instant.now());
-            eventProducer.send(new ProducerRecord<>(topic, "", listeningEvent));
-            Thread.sleep(100L);
+            eventProducer.send(new ProducerRecord<>(this.topic, "", listeningEvent));
+            Thread.sleep(TIMEOUT);
         }
     }
 
-    public static void main(final String[] args) throws Exception {
+    public static void main(final String[] args) {
         System.exit(new CommandLine(new MockDataProducer()).execute(args));
     }
 }
