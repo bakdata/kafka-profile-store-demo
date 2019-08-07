@@ -1,7 +1,5 @@
 package com.bakdata.recommender;
 
-import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
-
 import com.bakdata.recommender.avro.AdjacencyList;
 import com.bakdata.recommender.graph.BipartiteGraph;
 import com.bakdata.recommender.graph.KeyValueGraph;
@@ -22,8 +20,6 @@ import org.apache.kafka.streams.errors.InvalidStateStoreException;
 import org.apache.kafka.streams.state.HostInfo;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.Stores;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -75,7 +71,7 @@ public class RecommenderMain implements Callable<Void> {
             try {
                 streams.close();
                 restService.stop();
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 log.warn("Error in shutdown", e);
             }
         }));
@@ -89,7 +85,7 @@ public class RecommenderMain implements Callable<Void> {
      * @return the Properties of the application
      */
     public Properties getProperties() {
-        Properties props = new Properties();
+        final Properties props = new Properties();
         props.put(StreamsConfig.APPLICATION_ID_CONFIG, this.applicationId);
         props.put(StreamsConfig.APPLICATION_SERVER_CONFIG, String.format("%s:%s", this.host, this.port));
         props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.schemaRegistryUrl);
@@ -133,7 +129,7 @@ public class RecommenderMain implements Callable<Void> {
                 .addSource("interaction-source", this.topicName)
                 .addProcessor("interaction-processor", RecommenderProcessor::new, "interaction-source");
 
-        for (RecommendationType type : RecommendationType.values()) {
+        for (final RecommendationType type : RecommendationType.values()) {
             topology = this.addStateStores(topology, type, adjacencyListSerde);
         }
         return topology;
@@ -170,7 +166,7 @@ public class RecommenderMain implements Callable<Void> {
                 return;
             } catch (final InvalidStateStoreException ignored) {
                 // store not yet ready for querying
-                log.info("Not available");
+                log.debug("Store not available");
                 Thread.sleep(1000);
             }
         }
