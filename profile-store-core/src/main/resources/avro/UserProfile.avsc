@@ -1,0 +1,59 @@
+[
+  {
+    "namespace": "com.bakdata.profilestore.core.avro",
+    "name": "ChartTuple",
+    "type": "record",
+    "fields": [
+      {
+        "name": "id",
+        "type": "long"
+      },
+      {
+        "name": "countPlays",
+        "type": "long"
+      }
+    ]
+  },
+  {
+    "namespace": "com.bakdata.profilestore.core.avro",
+    "type": "record",
+    "name": "UserProfile",
+    "fields": [
+      {
+        "name": "firstListeningEvent",
+        "type": {
+          "type": "long",
+          "logicalType": "timestamp-millis"
+        }
+      },
+      {
+        "name": "lastListeningEvent",
+        "type": {
+          "type": "long",
+          "logicalType": "timestamp-millis"
+        }
+      },
+      {
+        "name": "topTenArtist",
+        "type": {
+          "type": "array",
+          "items": "com.bakdata.profilestore.core.avro.ChartTuple"
+        }
+      },
+      {
+        "name": "topTenAlbums",
+        "type": {
+          "type": "array",
+          "items": "com.bakdata.profilestore.core.avro.ChartTuple"
+        }
+      },
+      {
+        "name": "topTenTracks",
+        "type": {
+          "type": "array",
+          "items": "com.bakdata.profilestore.core.avro.ChartTuple"
+        }
+      }
+    ]
+  }
+]
