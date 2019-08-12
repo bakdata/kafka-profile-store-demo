@@ -2,6 +2,7 @@ package com.bakdata.profilestore.core.processor;
 
 import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.ProfilestoreTopology;
+import com.bakdata.profilestore.core.TopologyBaseTest;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -13,7 +14,7 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class LastEventProcessorTest extends ProcessorBaseTest {
+class LastEventTopologyTest extends TopologyBaseTest {
     @Test
     void testInOrderStream() {
         final Random random = new Random();

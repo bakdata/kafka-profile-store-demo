@@ -3,13 +3,14 @@ package com.bakdata.profilestore.core.processor;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.common.FieldType;
 import com.bakdata.profilestore.core.TopKList;
+import com.bakdata.profilestore.core.TopologyBaseTest;
 import com.bakdata.profilestore.core.avro.ChartTuple;
 import java.time.Instant;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class TopKProcessorTest extends ProcessorBaseTest {
+class TopKTopologyTest extends TopologyBaseTest {
     @Test
     void testAlbumCharts() {
         this.testTopology.input()
