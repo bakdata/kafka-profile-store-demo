@@ -55,8 +55,7 @@ public class TopKProcessor implements Processor<byte[], ListeningEvent> {
             topKList = new TopKList(this.k);
         }
         this.updateCharts(event, fieldId, count, topKList);
-        this.updateProfile(event, topKList);
-
+        this.updateProfile(event, this.chartStore.get(event.getUserId()));
     }
 
     private void updateCharts(final ListeningEvent event, final long fieldId, final Long count, final TopKList topKList) {
