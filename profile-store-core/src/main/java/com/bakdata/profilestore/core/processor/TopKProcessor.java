@@ -65,6 +65,6 @@ public class TopKProcessor implements Processor<byte[], ListeningEvent> {
     }
 
     public static String getProcessorName(final FieldType type) {
-        return "topKProcessor_" + type;
+        return "topK_processor_" + type;
     }
 }
