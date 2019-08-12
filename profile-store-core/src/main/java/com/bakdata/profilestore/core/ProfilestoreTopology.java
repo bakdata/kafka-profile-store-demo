@@ -2,10 +2,10 @@ package com.bakdata.profilestore.core;
 
 import com.bakdata.profilestore.core.avro.CompositeKey;
 import com.bakdata.profilestore.core.avro.UserProfile;
-import com.bakdata.profilestore.core.ids.AlbumIdExtractor;
-import com.bakdata.profilestore.core.ids.ArtistIdExtractor;
-import com.bakdata.profilestore.core.ids.IdExtractor;
-import com.bakdata.profilestore.core.ids.TrackIdExtractor;
+import com.bakdata.profilestore.core.fields.AlbumHandler;
+import com.bakdata.profilestore.core.fields.ArtistHandler;
+import com.bakdata.profilestore.core.fields.FieldHandler;
+import com.bakdata.profilestore.core.fields.TrackHandler;
 import com.bakdata.profilestore.core.processor.CheckProfileProcessor;
 import com.bakdata.profilestore.core.processor.FirstEventProcessor;
 import com.bakdata.profilestore.core.processor.LastEventProcessor;
@@ -26,8 +26,8 @@ public class ProfilestoreTopology extends Topology {
 
     private final String inputTopic;
 
-    private final IdExtractor[] idExtractors =
-            {new AlbumIdExtractor(), new ArtistIdExtractor(), new TrackIdExtractor()};
+    private final FieldHandler[] fieldHandlers =
+            {new AlbumHandler(), new ArtistHandler(), new TrackHandler()};
 
     private final SpecificAvroSerde<CompositeKey> compositeKeySerde;
     private final SpecificAvroSerde<UserProfile> userProfileSerde;
@@ -81,15 +81,16 @@ public class ProfilestoreTopology extends Topology {
         final Serde<Long> longSerde = Serdes.Long();
         final Serde<TopKList> topKListSerde = new TopKListSerde();
 
-        for (final IdExtractor extractor : this.idExtractors) {
-            final String processorName = TopKProcessor.getProcessorName(extractor.type());
-            this.addProcessor(processorName, () -> new TopKProcessor(10, extractor), SOURCE_NAME)
+        for (final FieldHandler fieldHandler : this.fieldHandlers) {
+            final String processorName = TopKProcessor.getProcessorName(fieldHandler.type());
+            this.addProcessor(processorName, () -> new TopKProcessor(10, fieldHandler), SOURCE_NAME)
                     .addStateStore(Stores.keyValueStoreBuilder(
-                            Stores.inMemoryKeyValueStore(TopKProcessor.getCountStoreName(extractor.type())),
+                            Stores.inMemoryKeyValueStore(TopKProcessor.getCountStoreName(fieldHandler.type())),
                             this.compositeKeySerde, longSerde), processorName)
                     .addStateStore(Stores.keyValueStoreBuilder(
-                            Stores.inMemoryKeyValueStore(TopKProcessor.getChartStoreName(extractor.type())),
-                            longSerde, topKListSerde), processorName);
+                            Stores.inMemoryKeyValueStore(TopKProcessor.getChartStoreName(fieldHandler.type())),
+                            longSerde, topKListSerde), processorName)
+            .connectProcessorAndStateStores(processorName, PROFILE_STORE_NAME);
         }
     }
 
