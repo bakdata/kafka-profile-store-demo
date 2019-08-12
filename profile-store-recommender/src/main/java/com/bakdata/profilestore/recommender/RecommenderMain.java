@@ -1,5 +1,6 @@
 package com.bakdata.profilestore.recommender;
 
+import com.bakdata.profilestore.common.FieldType;
 import com.bakdata.profilestore.recommender.avro.AdjacencyList;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import com.bakdata.profilestore.recommender.graph.KeyValueGraph;
@@ -63,7 +64,7 @@ public class RecommenderMain implements Callable<Void> {
         streams.start();
         this.waitForKafkaStreams(streams);
 
-        final Map<RecommendationType, BipartiteGraph> graph = this.getGraph(streams);
+        final Map<FieldType, BipartiteGraph> graph = this.getGraph(streams);
         final RestService restService = new RestService(new HostInfo(this.host, this.port), graph);
         restService.start();
 
@@ -101,12 +102,12 @@ public class RecommenderMain implements Callable<Void> {
      * @param streams the KafkaStreams instance
      * @return BipartiteGraph instance that represents the left and right index
      */
-    public Map<RecommendationType, BipartiteGraph> getGraph(final KafkaStreams streams) {
-        final Map<RecommendationType, BipartiteGraph> graphs = new EnumMap<>(RecommendationType.class);
-        for (final RecommendationType type : RecommendationType.values()) {
+    public Map<FieldType, BipartiteGraph> getGraph(final KafkaStreams streams) {
+        final Map<FieldType, BipartiteGraph> graphs = new EnumMap<>(FieldType.class);
+        for (final FieldType type : FieldType.values()) {
             graphs.put(type, new KeyValueGraph(
-                    streams.store(type.getLeftIndexName(), QueryableStoreTypes.keyValueStore()),
-                    streams.store(type.getRightIndexName(),
+                    streams.store(RecommenderProcessor.getLeftIndexName(type), QueryableStoreTypes.keyValueStore()),
+                    streams.store(RecommenderProcessor.getRightIndexName(type),
                             QueryableStoreTypes.keyValueStore())));
         }
         return graphs;
@@ -129,7 +130,7 @@ public class RecommenderMain implements Callable<Void> {
                 .addSource("interaction-source", this.topicName)
                 .addProcessor("interaction-processor", RecommenderProcessor::new, "interaction-source");
 
-        for (final RecommendationType type : RecommendationType.values()) {
+        for (final FieldType type : FieldType.values()) {
             topology = this.addStateStores(topology, type, adjacencyListSerde);
         }
         return topology;
@@ -143,14 +144,14 @@ public class RecommenderMain implements Callable<Void> {
      * @param adjacencyListSerde serde
      * @return updated Topology
      */
-    private Topology addStateStores(final Topology topology, final RecommendationType type,
+    private Topology addStateStores(final Topology topology, final FieldType type,
             final SpecificAvroSerde<AdjacencyList> adjacencyListSerde) {
         return topology
                 .addStateStore(Stores.keyValueStoreBuilder(
-                        Stores.inMemoryKeyValueStore(type.getLeftIndexName()),
+                        Stores.inMemoryKeyValueStore(RecommenderProcessor.getLeftIndexName(type)),
                         Serdes.Long(), adjacencyListSerde), "interaction-processor")
                 .addStateStore(Stores.keyValueStoreBuilder(
-                        Stores.inMemoryKeyValueStore(type.getRightIndexName()),
+                        Stores.inMemoryKeyValueStore(RecommenderProcessor.getRightIndexName(type)),
                         Serdes.Long(), adjacencyListSerde), "interaction-processor");
     }
 

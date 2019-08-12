@@ -1,5 +1,6 @@
 package com.bakdata.profilestore.recommender;
 
+import com.bakdata.profilestore.common.FieldType;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.recommender.avro.AdjacencyList;
 import com.bakdata.profilestore.recommender.graph.WritableKeyValueGraph;
@@ -13,16 +14,16 @@ import org.apache.kafka.streams.state.KeyValueStore;
  * Processor updates the left and right index for the random walks
  */
 public class RecommenderProcessor implements Processor<byte[], ListeningEvent> {
-    private final EnumMap<RecommendationType, WriteableBipartiteGraph> graphs =
-            new EnumMap<>(RecommendationType.class);
+    private final EnumMap<FieldType, WriteableBipartiteGraph> graphs =
+            new EnumMap<>(FieldType.class);
 
     @Override
     public void init(final ProcessorContext processorContext) {
-        for (final RecommendationType type : RecommendationType.values()) {
+        for (final FieldType type : FieldType.values()) {
             final KeyValueStore<Long, AdjacencyList> leftIndex = (KeyValueStore<Long, AdjacencyList>) processorContext
-                    .getStateStore(type.getLeftIndexName());
+                    .getStateStore(getLeftIndexName(type));
             final KeyValueStore<Long, AdjacencyList> rightIndex = (KeyValueStore<Long, AdjacencyList>) processorContext
-                    .getStateStore(type.getRightIndexName());
+                    .getStateStore(getRightIndexName(type));
 
             final WriteableBipartiteGraph graph = new WritableKeyValueGraph(leftIndex, rightIndex);
 
@@ -32,9 +33,9 @@ public class RecommenderProcessor implements Processor<byte[], ListeningEvent> {
 
     @Override
     public void process(final byte[] bytes, final ListeningEvent event) {
-        this.graphs.get(RecommendationType.ALBUM).addEdge(event.getUserId(), event.getAlbumId());
-        this.graphs.get(RecommendationType.ARTIST).addEdge(event.getUserId(), event.getArtistId());
-        this.graphs.get(RecommendationType.TRACK).addEdge(event.getUserId(), event.getTrackId());
+        this.graphs.get(FieldType.ALBUM).addEdge(event.getUserId(), event.getAlbumId());
+        this.graphs.get(FieldType.ARTIST).addEdge(event.getUserId(), event.getArtistId());
+        this.graphs.get(FieldType.TRACK).addEdge(event.getUserId(), event.getTrackId());
     }
 
     @Override
@@ -42,4 +43,11 @@ public class RecommenderProcessor implements Processor<byte[], ListeningEvent> {
     }
 
 
+    public static String getLeftIndexName(final FieldType fieldType) {
+        return String.format("%s_%s", fieldType, RecommenderMain.LEFT_INDEX_NAME);
+    }
+
+    public static String getRightIndexName(final FieldType fieldType) {
+        return String.format("%s_%s", fieldType, RecommenderMain.RIGHT_INDEX_NAME);
+    }
 }

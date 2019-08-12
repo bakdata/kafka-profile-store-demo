@@ -1,7 +1,7 @@
 package com.bakdata.profilestore.core.processor;
 
 import com.bakdata.profilestore.common.avro.ListeningEvent;
-import com.bakdata.profilestore.core.FieldType;
+import com.bakdata.profilestore.common.FieldType;
 import com.bakdata.profilestore.core.TopKList;
 import com.bakdata.profilestore.core.avro.ChartTuple;
 import com.bakdata.profilestore.core.avro.CompositeKey;

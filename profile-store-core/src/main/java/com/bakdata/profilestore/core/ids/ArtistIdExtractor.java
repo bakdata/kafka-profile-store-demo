@@ -1,7 +1,7 @@
 package com.bakdata.profilestore.core.ids;
 
 import com.bakdata.profilestore.common.avro.ListeningEvent;
-import com.bakdata.profilestore.core.FieldType;
+import com.bakdata.profilestore.common.FieldType;
 
 public class ArtistIdExtractor implements IdExtractor {
     @Override

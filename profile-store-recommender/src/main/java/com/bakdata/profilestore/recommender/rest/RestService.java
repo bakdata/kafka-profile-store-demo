@@ -1,6 +1,6 @@
 package com.bakdata.profilestore.recommender.rest;
 
-import com.bakdata.profilestore.recommender.RecommendationType;
+import com.bakdata.profilestore.common.FieldType;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import java.net.SocketException;
 import java.util.Map;
@@ -23,7 +23,7 @@ public class RestService {
 
     private static final Logger log = LoggerFactory.getLogger(RestService.class);
 
-    public RestService(final HostInfo hostInfo, final Map<RecommendationType, BipartiteGraph> graphs) {
+    public RestService(final HostInfo hostInfo, final Map<FieldType, BipartiteGraph> graphs) {
         this.hostInfo = hostInfo;
         this.resource = new RestResource(graphs);
 
