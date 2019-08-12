@@ -3,16 +3,26 @@ package com.bakdata.profilestore.core;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.avro.CompositeKey;
 import com.bakdata.profilestore.core.avro.UserProfile;
+import com.bakdata.profilestore.core.rest.ProfilestoreRestService;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.Callable;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.state.HostInfo;
+import org.apache.kafka.streams.state.QueryableStoreTypes;
 import picocli.CommandLine;
+import picocli.CommandLine.Command;
 
-public class ProfilestoreMain {
+@Slf4j
+@Command(name = "recommender", mixinStandardHelpOptions = true,
+        description = "Start KafkaStreams application recommender")
+public class ProfilestoreMain implements Callable<Void> {
 
     @CommandLine.Option(names = "--application-id", required = true, description = "name of streams application")
     private String applicationId = "music-recommender";
@@ -32,6 +42,36 @@ public class ProfilestoreMain {
     @CommandLine.Option(names = "--topic", defaultValue = "listening-events",
             description = "name of topic with incoming interactions")
     private String topicName = "listening-events";
+
+    public static void main(final String[] args) {
+        System.exit(new CommandLine(new ProfilestoreMain()).execute(args));
+    }
+
+    @Override
+    public Void call() throws Exception {
+        final Properties properties = this.getProperties();
+        final Topology topology = this.buildTopology(properties);
+        final KafkaStreams streams = new KafkaStreams(topology, properties);
+
+        streams.cleanUp();
+        streams.start();
+
+        final ProfilestoreRestService restService = new ProfilestoreRestService(new HostInfo(this.host, this.port),
+                streams.store(ProfilestoreTopology.PROFILE_STORE_NAME,
+                        QueryableStoreTypes.keyValueStore()));
+        restService.start();
+
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            try {
+                streams.close();
+                restService.stop();
+            } catch (final Exception e) {
+                log.warn("Error in shutdown", e);
+            }
+        }));
+
+        return null;
+    }
 
     public Properties getProperties() {
         final Properties props = new Properties();
