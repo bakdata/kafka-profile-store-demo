@@ -4,6 +4,7 @@ import com.bakdata.profilestore.common.FieldType;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import java.net.SocketException;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.state.HostInfo;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -15,18 +16,15 @@ import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
+@Slf4j
 public class RestService {
     private final HostInfo hostInfo;
     private final RestResource resource;
     private Server server;
 
-    private static final Logger log = LoggerFactory.getLogger(RestService.class);
-
     public RestService(final HostInfo hostInfo, final Map<FieldType, BipartiteGraph> graphs) {
         this.hostInfo = hostInfo;
         this.resource = new RestResource(graphs);
-
     }
 
     public void start() throws Exception {
