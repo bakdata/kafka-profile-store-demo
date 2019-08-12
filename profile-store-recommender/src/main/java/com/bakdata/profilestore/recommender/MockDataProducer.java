@@ -5,6 +5,7 @@ import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerializer;
 import java.time.Instant;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
@@ -21,6 +22,8 @@ import picocli.CommandLine.Command;
 @Command(name = "mock-data-producer")
 public class MockDataProducer implements Callable<Void> {
     private static final long TIMEOUT = 100L;
+    private final Map<Long, Long> artistAlbumMap = new HashMap<>();
+    private final Map<Long, Long> albumTrackMap = new HashMap<>();
 
     @CommandLine.Option(names = "--bootstrap-server", defaultValue = "localhost:29092")
     private String bootstrapServers;
@@ -50,15 +53,24 @@ public class MockDataProducer implements Callable<Void> {
                 specificAvroSerializer);
 
         while (true) {
-            final ListeningEvent listeningEvent = new ListeningEvent(ThreadLocalRandom.current().nextLong(100),
-                    ThreadLocalRandom.current().nextLong(200),
-                    ThreadLocalRandom.current().nextLong(300),
-                    ThreadLocalRandom.current().nextLong(400),
-                    Instant.now());
+            final ListeningEvent listeningEvent = this.createRandomEvent();
             eventProducer.send(new ProducerRecord<>(this.topic, "", listeningEvent));
             Thread.sleep(TIMEOUT);
         }
     }
+
+    private ListeningEvent createRandomEvent() {
+        final long artistId = ThreadLocalRandom.current().nextLong(2000);
+        final long albumId = this.artistAlbumMap.getOrDefault(artistId, ThreadLocalRandom.current().nextLong(10_000));
+        this.artistAlbumMap.putIfAbsent(artistId, albumId);
+        final long trackId = this.albumTrackMap.getOrDefault(albumId, ThreadLocalRandom.current().nextLong(100_000));
+        this.albumTrackMap.putIfAbsent(albumId, trackId);
+
+        return new ListeningEvent(ThreadLocalRandom.current().nextLong(15_000), artistId, albumId, trackId,
+                Instant.now().plusMillis(ThreadLocalRandom.current().nextLong(900)));
+
+    }
+
 
     public static void main(final String[] args) {
         System.exit(new CommandLine(new MockDataProducer()).execute(args));
