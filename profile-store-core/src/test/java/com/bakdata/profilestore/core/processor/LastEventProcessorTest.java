@@ -1,8 +1,8 @@
 package com.bakdata.profilestore.core.processor;
 
-import com.bakdata.profilestore.common.avro.ListeningEvent;
-import com.bakdata.profilestore.core.ProfilestoreTopology;
+import com.bakdata.profilestore.core.ProfilestoreMain;
 import com.bakdata.profilestore.core.TopologyBaseTest;
+import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -14,8 +14,7 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class FirstEventTopologyTest extends TopologyBaseTest {
-
+class LastEventProcessorTest extends TopologyBaseTest {
     @Test
     void testInOrderStream() {
         final Random random = new Random();
@@ -27,12 +26,12 @@ class FirstEventTopologyTest extends TopologyBaseTest {
                         firstInstant.plusSeconds(i))
         ).collect(Collectors.toList());
 
-        timestamps.forEach(event -> this.testTopology.input().add(event));
+        timestamps.forEach(event -> this.testTopology.input("listening-events").add(event));
 
         final KeyValueStore<Long, UserProfile> profileStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreTopology.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
 
-        Assertions.assertEquals(firstInstant, profileStore.get(1L).getFirstListeningEvent());
+        Assertions.assertEquals(firstInstant.plusSeconds(19), profileStore.get(1L).getLastListeningEvent());
     }
 
     @Test
@@ -40,7 +39,7 @@ class FirstEventTopologyTest extends TopologyBaseTest {
         // truncation is necessary because the serialization truncates
         final Instant firstInstant = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
-        this.testTopology.input()
+        this.testTopology.input("listening-events")
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(20)))
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(25)))
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(18)))
@@ -49,9 +48,9 @@ class FirstEventTopologyTest extends TopologyBaseTest {
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(35)));
 
         final KeyValueStore<Long, UserProfile> profileStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreTopology.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
 
-        Assertions.assertEquals(firstInstant, profileStore.get(1L).getFirstListeningEvent());
+        Assertions.assertEquals(firstInstant.plusSeconds(35), profileStore.get(1L).getLastListeningEvent());
     }
 
 

@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class ListeningEvent extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 8782589345629474403L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"ListeningEvent\",\"namespace\":\"com.bakdata.profilestore.common.avro\",\"fields\":[{\"name\":\"userId\",\"type\":\"long\"},{\"name\":\"artistId\",\"type\":\"long\"},{\"name\":\"albumId\",\"type\":\"long\"},{\"name\":\"trackId\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":[\"null\",{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}]}]}");
+  private static final long serialVersionUID = 145180358742860211L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"ListeningEvent\",\"namespace\":\"com.bakdata.profilestore.common.avro\",\"fields\":[{\"name\":\"userId\",\"type\":\"long\"},{\"name\":\"artistId\",\"type\":\"long\"},{\"name\":\"albumId\",\"type\":\"long\"},{\"name\":\"trackId\",\"type\":\"long\"},{\"name\":\"timestamp\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -100,7 +100,7 @@ static {
     this.artistId = artistId;
     this.albumId = albumId;
     this.trackId = trackId;
-    this.timestamp = timestamp;
+    this.timestamp = timestamp.truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
   }
 
   public org.apache.avro.specific.SpecificData getSpecificData() { return MODEL$; }
@@ -115,6 +115,21 @@ static {
     case 4: return timestamp;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
+  }
+
+  private static final org.apache.avro.Conversion<?>[] conversions =
+      new org.apache.avro.Conversion<?>[] {
+      null,
+      null,
+      null,
+      null,
+      new org.apache.avro.data.TimeConversions.TimestampMillisConversion(),
+      null
+  };
+
+  @Override
+  public org.apache.avro.Conversion<?> getConversion(int field) {
+    return conversions[field];
   }
 
   // Used by DatumReader.  Applications should not call.
@@ -212,7 +227,7 @@ static {
    * @param value the value to set.
    */
   public void setTimestamp(java.time.Instant value) {
-    this.timestamp = value;
+    this.timestamp = value.truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
   }
 
   /**
@@ -494,7 +509,7 @@ static {
       */
     public com.bakdata.profilestore.common.avro.ListeningEvent.Builder setTimestamp(java.time.Instant value) {
       validate(fields()[4], value);
-      this.timestamp = value;
+      this.timestamp = value.truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
       fieldSetFlags()[4] = true;
       return this;
     }
@@ -513,7 +528,6 @@ static {
       * @return This builder.
       */
     public com.bakdata.profilestore.common.avro.ListeningEvent.Builder clearTimestamp() {
-      timestamp = null;
       fieldSetFlags()[4] = false;
       return this;
     }

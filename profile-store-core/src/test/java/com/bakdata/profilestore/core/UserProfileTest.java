@@ -1,7 +1,7 @@
 package com.bakdata.profilestore.core;
 
-import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.avro.ChartTuple;
+import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -18,7 +18,7 @@ public class UserProfileTest extends TopologyBaseTest {
     void testSingleUser() {
         final Instant firstInstant = java.time.Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
-        this.testTopology.input()
+        this.testTopology.input("listening-events")
                 .add(new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(20)))
                 .add(new ListeningEvent(1L, 1L, 1L, 2L, firstInstant.plusSeconds(25)))
                 .add(new ListeningEvent(1L, 1L, 1L, 3L, firstInstant.plusSeconds(18)))
@@ -30,7 +30,7 @@ public class UserProfileTest extends TopologyBaseTest {
                 .add(new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(346)));
 
         final KeyValueStore<Long, UserProfile> profileStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreTopology.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
         final UserProfile userProfile = profileStore.get(1L);
 
         Assertions.assertEquals(firstInstant.plusSeconds(5), userProfile.getFirstListeningEvent());

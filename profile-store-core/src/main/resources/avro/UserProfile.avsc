@@ -20,6 +20,10 @@
     "name": "UserProfile",
     "fields": [
       {
+        "name": "eventCount",
+        "type": "long"
+      },
+      {
         "name": "firstListeningEvent",
         "type": {
           "type": "long",

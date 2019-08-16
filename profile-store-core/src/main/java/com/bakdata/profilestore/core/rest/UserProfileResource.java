@@ -1,7 +1,7 @@
 package com.bakdata.profilestore.core.rest;
 
 
-import com.bakdata.profilestore.core.ProfilestoreTopology;
+import com.bakdata.profilestore.core.ProfilestoreMain;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -29,7 +29,7 @@ public class UserProfileResource {
     public String getRecommendationsForUser(
             @PathParam("userId") final long userId) {
         log.info("Request for user {}", userId);
-        final ReadOnlyKeyValueStore<Long, UserProfile> profileStore = this.streams.store(ProfilestoreTopology.PROFILE_STORE_NAME,
+        final ReadOnlyKeyValueStore<Long, UserProfile> profileStore = this.streams.store(ProfilestoreMain.PROFILE_STORE_NAME,
                 QueryableStoreTypes.keyValueStore());
         return profileStore.get(userId).toString();
     }

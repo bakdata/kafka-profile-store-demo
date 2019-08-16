@@ -1,16 +1,18 @@
 package com.bakdata.profilestore.core.fields;
 
-import com.bakdata.profilestore.common.FieldType;
 
-public abstract class FieldHandler implements IdExtractor, FieldUpdater {
-    private final FieldType fieldType;
+import com.bakdata.profilestore.common.avro.ListeningEvent;
+import com.bakdata.profilestore.core.FieldType;
+import com.bakdata.profilestore.core.avro.ChartTuple;
+import com.bakdata.profilestore.core.avro.UserProfile;
+import java.util.List;
 
-    public FieldHandler(final FieldType fieldType) {
-        this.fieldType = fieldType;
-    }
+public interface FieldHandler {
+    UserProfile updateProfile(UserProfile userProfile, List<ChartTuple> charts);
 
-    public FieldType type() {
-        return this.fieldType;
-    }
+    List<ChartTuple> getCharts(UserProfile userProfile);
 
+    long extractId(ListeningEvent listeningEvent);
+
+    FieldType type();
 }

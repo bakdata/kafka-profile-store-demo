@@ -14,8 +14,8 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class UserProfile extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 1972550308258409504L;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UserProfile\",\"namespace\":\"com.bakdata.profilestore.core.avro\",\"fields\":[{\"name\":\"firstListeningEvent\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}},{\"name\":\"lastListeningEvent\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}},{\"name\":\"topTenArtist\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"ChartTuple\",\"fields\":[{\"name\":\"id\",\"type\":\"long\"},{\"name\":\"countPlays\",\"type\":\"long\"}]}}},{\"name\":\"topTenAlbums\",\"type\":{\"type\":\"array\",\"items\":\"ChartTuple\"}},{\"name\":\"topTenTracks\",\"type\":{\"type\":\"array\",\"items\":\"ChartTuple\"}}]}");
+  private static final long serialVersionUID = -2457765605782027013L;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"UserProfile\",\"namespace\":\"com.bakdata.profilestore.core.avro\",\"fields\":[{\"name\":\"eventCount\",\"type\":\"long\"},{\"name\":\"firstListeningEvent\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}},{\"name\":\"lastListeningEvent\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}},{\"name\":\"topTenArtist\",\"type\":{\"type\":\"array\",\"items\":{\"type\":\"record\",\"name\":\"ChartTuple\",\"fields\":[{\"name\":\"id\",\"type\":\"long\"},{\"name\":\"countPlays\",\"type\":\"long\"}]}}},{\"name\":\"topTenAlbums\",\"type\":{\"type\":\"array\",\"items\":\"ChartTuple\"}},{\"name\":\"topTenTracks\",\"type\":{\"type\":\"array\",\"items\":\"ChartTuple\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static SpecificData MODEL$ = new SpecificData();
@@ -74,6 +74,7 @@ static {
     return DECODER.decode(b);
   }
 
+  @Deprecated public long eventCount;
   @Deprecated public java.time.Instant firstListeningEvent;
   @Deprecated public java.time.Instant lastListeningEvent;
   @Deprecated public java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> topTenArtist;
@@ -89,13 +90,15 @@ static {
 
   /**
    * All-args constructor.
+   * @param eventCount The new value for eventCount
    * @param firstListeningEvent The new value for firstListeningEvent
    * @param lastListeningEvent The new value for lastListeningEvent
    * @param topTenArtist The new value for topTenArtist
    * @param topTenAlbums The new value for topTenAlbums
    * @param topTenTracks The new value for topTenTracks
    */
-  public UserProfile(java.time.Instant firstListeningEvent, java.time.Instant lastListeningEvent, java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> topTenArtist, java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> topTenAlbums, java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> topTenTracks) {
+  public UserProfile(java.lang.Long eventCount, java.time.Instant firstListeningEvent, java.time.Instant lastListeningEvent, java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> topTenArtist, java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> topTenAlbums, java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> topTenTracks) {
+    this.eventCount = eventCount;
     this.firstListeningEvent = firstListeningEvent.truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
     this.lastListeningEvent = lastListeningEvent.truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
     this.topTenArtist = topTenArtist;
@@ -108,17 +111,19 @@ static {
   // Used by DatumWriter.  Applications should not call.
   public java.lang.Object get(int field$) {
     switch (field$) {
-    case 0: return firstListeningEvent;
-    case 1: return lastListeningEvent;
-    case 2: return topTenArtist;
-    case 3: return topTenAlbums;
-    case 4: return topTenTracks;
+    case 0: return eventCount;
+    case 1: return firstListeningEvent;
+    case 2: return lastListeningEvent;
+    case 3: return topTenArtist;
+    case 4: return topTenAlbums;
+    case 5: return topTenTracks;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
   }
 
   private static final org.apache.avro.Conversion<?>[] conversions =
       new org.apache.avro.Conversion<?>[] {
+      null,
       new org.apache.avro.data.TimeConversions.TimestampMillisConversion(),
       new org.apache.avro.data.TimeConversions.TimestampMillisConversion(),
       null,
@@ -136,13 +141,31 @@ static {
   @SuppressWarnings(value="unchecked")
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
-    case 0: firstListeningEvent = (java.time.Instant)value$; break;
-    case 1: lastListeningEvent = (java.time.Instant)value$; break;
-    case 2: topTenArtist = (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>)value$; break;
-    case 3: topTenAlbums = (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>)value$; break;
-    case 4: topTenTracks = (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>)value$; break;
+    case 0: eventCount = (java.lang.Long)value$; break;
+    case 1: firstListeningEvent = (java.time.Instant)value$; break;
+    case 2: lastListeningEvent = (java.time.Instant)value$; break;
+    case 3: topTenArtist = (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>)value$; break;
+    case 4: topTenAlbums = (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>)value$; break;
+    case 5: topTenTracks = (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>)value$; break;
     default: throw new org.apache.avro.AvroRuntimeException("Bad index");
     }
+  }
+
+  /**
+   * Gets the value of the 'eventCount' field.
+   * @return The value of the 'eventCount' field.
+   */
+  public long getEventCount() {
+    return eventCount;
+  }
+
+
+  /**
+   * Sets the value of the 'eventCount' field.
+   * @param value the value to set.
+   */
+  public void setEventCount(long value) {
+    this.eventCount = value;
   }
 
   /**
@@ -270,6 +293,7 @@ static {
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<UserProfile>
     implements org.apache.avro.data.RecordBuilder<UserProfile> {
 
+    private long eventCount;
     private java.time.Instant firstListeningEvent;
     private java.time.Instant lastListeningEvent;
     private java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> topTenArtist;
@@ -287,25 +311,29 @@ static {
      */
     private Builder(com.bakdata.profilestore.core.avro.UserProfile.Builder other) {
       super(other);
-      if (isValidValue(fields()[0], other.firstListeningEvent)) {
-        this.firstListeningEvent = data().deepCopy(fields()[0].schema(), other.firstListeningEvent);
+      if (isValidValue(fields()[0], other.eventCount)) {
+        this.eventCount = data().deepCopy(fields()[0].schema(), other.eventCount);
         fieldSetFlags()[0] = other.fieldSetFlags()[0];
       }
-      if (isValidValue(fields()[1], other.lastListeningEvent)) {
-        this.lastListeningEvent = data().deepCopy(fields()[1].schema(), other.lastListeningEvent);
+      if (isValidValue(fields()[1], other.firstListeningEvent)) {
+        this.firstListeningEvent = data().deepCopy(fields()[1].schema(), other.firstListeningEvent);
         fieldSetFlags()[1] = other.fieldSetFlags()[1];
       }
-      if (isValidValue(fields()[2], other.topTenArtist)) {
-        this.topTenArtist = data().deepCopy(fields()[2].schema(), other.topTenArtist);
+      if (isValidValue(fields()[2], other.lastListeningEvent)) {
+        this.lastListeningEvent = data().deepCopy(fields()[2].schema(), other.lastListeningEvent);
         fieldSetFlags()[2] = other.fieldSetFlags()[2];
       }
-      if (isValidValue(fields()[3], other.topTenAlbums)) {
-        this.topTenAlbums = data().deepCopy(fields()[3].schema(), other.topTenAlbums);
+      if (isValidValue(fields()[3], other.topTenArtist)) {
+        this.topTenArtist = data().deepCopy(fields()[3].schema(), other.topTenArtist);
         fieldSetFlags()[3] = other.fieldSetFlags()[3];
       }
-      if (isValidValue(fields()[4], other.topTenTracks)) {
-        this.topTenTracks = data().deepCopy(fields()[4].schema(), other.topTenTracks);
+      if (isValidValue(fields()[4], other.topTenAlbums)) {
+        this.topTenAlbums = data().deepCopy(fields()[4].schema(), other.topTenAlbums);
         fieldSetFlags()[4] = other.fieldSetFlags()[4];
+      }
+      if (isValidValue(fields()[5], other.topTenTracks)) {
+        this.topTenTracks = data().deepCopy(fields()[5].schema(), other.topTenTracks);
+        fieldSetFlags()[5] = other.fieldSetFlags()[5];
       }
     }
 
@@ -315,26 +343,69 @@ static {
      */
     private Builder(com.bakdata.profilestore.core.avro.UserProfile other) {
       super(SCHEMA$);
-      if (isValidValue(fields()[0], other.firstListeningEvent)) {
-        this.firstListeningEvent = data().deepCopy(fields()[0].schema(), other.firstListeningEvent);
+      if (isValidValue(fields()[0], other.eventCount)) {
+        this.eventCount = data().deepCopy(fields()[0].schema(), other.eventCount);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.lastListeningEvent)) {
-        this.lastListeningEvent = data().deepCopy(fields()[1].schema(), other.lastListeningEvent);
+      if (isValidValue(fields()[1], other.firstListeningEvent)) {
+        this.firstListeningEvent = data().deepCopy(fields()[1].schema(), other.firstListeningEvent);
         fieldSetFlags()[1] = true;
       }
-      if (isValidValue(fields()[2], other.topTenArtist)) {
-        this.topTenArtist = data().deepCopy(fields()[2].schema(), other.topTenArtist);
+      if (isValidValue(fields()[2], other.lastListeningEvent)) {
+        this.lastListeningEvent = data().deepCopy(fields()[2].schema(), other.lastListeningEvent);
         fieldSetFlags()[2] = true;
       }
-      if (isValidValue(fields()[3], other.topTenAlbums)) {
-        this.topTenAlbums = data().deepCopy(fields()[3].schema(), other.topTenAlbums);
+      if (isValidValue(fields()[3], other.topTenArtist)) {
+        this.topTenArtist = data().deepCopy(fields()[3].schema(), other.topTenArtist);
         fieldSetFlags()[3] = true;
       }
-      if (isValidValue(fields()[4], other.topTenTracks)) {
-        this.topTenTracks = data().deepCopy(fields()[4].schema(), other.topTenTracks);
+      if (isValidValue(fields()[4], other.topTenAlbums)) {
+        this.topTenAlbums = data().deepCopy(fields()[4].schema(), other.topTenAlbums);
         fieldSetFlags()[4] = true;
       }
+      if (isValidValue(fields()[5], other.topTenTracks)) {
+        this.topTenTracks = data().deepCopy(fields()[5].schema(), other.topTenTracks);
+        fieldSetFlags()[5] = true;
+      }
+    }
+
+    /**
+      * Gets the value of the 'eventCount' field.
+      * @return The value.
+      */
+    public long getEventCount() {
+      return eventCount;
+    }
+
+
+    /**
+      * Sets the value of the 'eventCount' field.
+      * @param value The value of 'eventCount'.
+      * @return This builder.
+      */
+    public com.bakdata.profilestore.core.avro.UserProfile.Builder setEventCount(long value) {
+      validate(fields()[0], value);
+      this.eventCount = value;
+      fieldSetFlags()[0] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'eventCount' field has been set.
+      * @return True if the 'eventCount' field has been set, false otherwise.
+      */
+    public boolean hasEventCount() {
+      return fieldSetFlags()[0];
+    }
+
+
+    /**
+      * Clears the value of the 'eventCount' field.
+      * @return This builder.
+      */
+    public com.bakdata.profilestore.core.avro.UserProfile.Builder clearEventCount() {
+      fieldSetFlags()[0] = false;
+      return this;
     }
 
     /**
@@ -352,9 +423,9 @@ static {
       * @return This builder.
       */
     public com.bakdata.profilestore.core.avro.UserProfile.Builder setFirstListeningEvent(java.time.Instant value) {
-      validate(fields()[0], value);
+      validate(fields()[1], value);
       this.firstListeningEvent = value.truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
-      fieldSetFlags()[0] = true;
+      fieldSetFlags()[1] = true;
       return this;
     }
 
@@ -363,7 +434,7 @@ static {
       * @return True if the 'firstListeningEvent' field has been set, false otherwise.
       */
     public boolean hasFirstListeningEvent() {
-      return fieldSetFlags()[0];
+      return fieldSetFlags()[1];
     }
 
 
@@ -372,7 +443,7 @@ static {
       * @return This builder.
       */
     public com.bakdata.profilestore.core.avro.UserProfile.Builder clearFirstListeningEvent() {
-      fieldSetFlags()[0] = false;
+      fieldSetFlags()[1] = false;
       return this;
     }
 
@@ -391,9 +462,9 @@ static {
       * @return This builder.
       */
     public com.bakdata.profilestore.core.avro.UserProfile.Builder setLastListeningEvent(java.time.Instant value) {
-      validate(fields()[1], value);
+      validate(fields()[2], value);
       this.lastListeningEvent = value.truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
-      fieldSetFlags()[1] = true;
+      fieldSetFlags()[2] = true;
       return this;
     }
 
@@ -402,7 +473,7 @@ static {
       * @return True if the 'lastListeningEvent' field has been set, false otherwise.
       */
     public boolean hasLastListeningEvent() {
-      return fieldSetFlags()[1];
+      return fieldSetFlags()[2];
     }
 
 
@@ -411,7 +482,7 @@ static {
       * @return This builder.
       */
     public com.bakdata.profilestore.core.avro.UserProfile.Builder clearLastListeningEvent() {
-      fieldSetFlags()[1] = false;
+      fieldSetFlags()[2] = false;
       return this;
     }
 
@@ -430,9 +501,9 @@ static {
       * @return This builder.
       */
     public com.bakdata.profilestore.core.avro.UserProfile.Builder setTopTenArtist(java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> value) {
-      validate(fields()[2], value);
+      validate(fields()[3], value);
       this.topTenArtist = value;
-      fieldSetFlags()[2] = true;
+      fieldSetFlags()[3] = true;
       return this;
     }
 
@@ -441,7 +512,7 @@ static {
       * @return True if the 'topTenArtist' field has been set, false otherwise.
       */
     public boolean hasTopTenArtist() {
-      return fieldSetFlags()[2];
+      return fieldSetFlags()[3];
     }
 
 
@@ -451,7 +522,7 @@ static {
       */
     public com.bakdata.profilestore.core.avro.UserProfile.Builder clearTopTenArtist() {
       topTenArtist = null;
-      fieldSetFlags()[2] = false;
+      fieldSetFlags()[3] = false;
       return this;
     }
 
@@ -470,9 +541,9 @@ static {
       * @return This builder.
       */
     public com.bakdata.profilestore.core.avro.UserProfile.Builder setTopTenAlbums(java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> value) {
-      validate(fields()[3], value);
+      validate(fields()[4], value);
       this.topTenAlbums = value;
-      fieldSetFlags()[3] = true;
+      fieldSetFlags()[4] = true;
       return this;
     }
 
@@ -481,7 +552,7 @@ static {
       * @return True if the 'topTenAlbums' field has been set, false otherwise.
       */
     public boolean hasTopTenAlbums() {
-      return fieldSetFlags()[3];
+      return fieldSetFlags()[4];
     }
 
 
@@ -491,7 +562,7 @@ static {
       */
     public com.bakdata.profilestore.core.avro.UserProfile.Builder clearTopTenAlbums() {
       topTenAlbums = null;
-      fieldSetFlags()[3] = false;
+      fieldSetFlags()[4] = false;
       return this;
     }
 
@@ -510,9 +581,9 @@ static {
       * @return This builder.
       */
     public com.bakdata.profilestore.core.avro.UserProfile.Builder setTopTenTracks(java.util.List<com.bakdata.profilestore.core.avro.ChartTuple> value) {
-      validate(fields()[4], value);
+      validate(fields()[5], value);
       this.topTenTracks = value;
-      fieldSetFlags()[4] = true;
+      fieldSetFlags()[5] = true;
       return this;
     }
 
@@ -521,7 +592,7 @@ static {
       * @return True if the 'topTenTracks' field has been set, false otherwise.
       */
     public boolean hasTopTenTracks() {
-      return fieldSetFlags()[4];
+      return fieldSetFlags()[5];
     }
 
 
@@ -531,7 +602,7 @@ static {
       */
     public com.bakdata.profilestore.core.avro.UserProfile.Builder clearTopTenTracks() {
       topTenTracks = null;
-      fieldSetFlags()[4] = false;
+      fieldSetFlags()[5] = false;
       return this;
     }
 
@@ -540,11 +611,12 @@ static {
     public UserProfile build() {
       try {
         UserProfile record = new UserProfile();
-        record.firstListeningEvent = fieldSetFlags()[0] ? this.firstListeningEvent : (java.time.Instant) defaultValue(fields()[0]);
-        record.lastListeningEvent = fieldSetFlags()[1] ? this.lastListeningEvent : (java.time.Instant) defaultValue(fields()[1]);
-        record.topTenArtist = fieldSetFlags()[2] ? this.topTenArtist : (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>) defaultValue(fields()[2]);
-        record.topTenAlbums = fieldSetFlags()[3] ? this.topTenAlbums : (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>) defaultValue(fields()[3]);
-        record.topTenTracks = fieldSetFlags()[4] ? this.topTenTracks : (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>) defaultValue(fields()[4]);
+        record.eventCount = fieldSetFlags()[0] ? this.eventCount : (java.lang.Long) defaultValue(fields()[0]);
+        record.firstListeningEvent = fieldSetFlags()[1] ? this.firstListeningEvent : (java.time.Instant) defaultValue(fields()[1]);
+        record.lastListeningEvent = fieldSetFlags()[2] ? this.lastListeningEvent : (java.time.Instant) defaultValue(fields()[2]);
+        record.topTenArtist = fieldSetFlags()[3] ? this.topTenArtist : (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>) defaultValue(fields()[3]);
+        record.topTenAlbums = fieldSetFlags()[4] ? this.topTenAlbums : (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>) defaultValue(fields()[4]);
+        record.topTenTracks = fieldSetFlags()[5] ? this.topTenTracks : (java.util.List<com.bakdata.profilestore.core.avro.ChartTuple>) defaultValue(fields()[5]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {
         throw e;

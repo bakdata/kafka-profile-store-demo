@@ -1,16 +1,12 @@
 package com.bakdata.profilestore.core.fields;
 
 import com.bakdata.profilestore.common.avro.ListeningEvent;
-import com.bakdata.profilestore.common.FieldType;
+import com.bakdata.profilestore.core.FieldType;
 import com.bakdata.profilestore.core.avro.ChartTuple;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.util.List;
 
-public class TrackHandler extends FieldHandler {
-
-    public TrackHandler() {
-        super(FieldType.TRACK);
-    }
+public class TrackHandler implements FieldHandler {
 
     @Override
     public long extractId(final ListeningEvent listeningEvent) {
@@ -23,6 +19,10 @@ public class TrackHandler extends FieldHandler {
         return userProfile;
     }
 
+    @Override
+    public List<ChartTuple> getCharts(final UserProfile userProfile) {
+        return userProfile.getTopTenTracks();
+    }
 
     @Override
     public FieldType type() {
