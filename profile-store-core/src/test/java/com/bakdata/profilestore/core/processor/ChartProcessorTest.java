@@ -1,9 +1,9 @@
 package com.bakdata.profilestore.core.processor;
 
+import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.ProfilestoreMain;
 import com.bakdata.profilestore.core.TopologyBaseTest;
 import com.bakdata.profilestore.core.avro.ChartTuple;
-import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
 import org.apache.kafka.streams.state.KeyValueStore;
@@ -35,14 +35,14 @@ class ChartProcessorTest extends TopologyBaseTest {
 
     @Test
     void testArtistCharts() {
-        this.testTopology.input()
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(new ListeningEvent(1L, 2L, 3L, 5L, Instant.now()))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(new ListeningEvent(1L, 3L, 4L, 5L, Instant.now()))
-                .add(new ListeningEvent(1L, 3L, 4L, 5L, Instant.now()))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
+        this.testTopology.input("listening-events")
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 5L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 3L, 4L, 5L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 3L, 4L, 5L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
 
         final KeyValueStore<Long, UserProfile> chartStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
@@ -60,11 +60,11 @@ class ChartProcessorTest extends TopologyBaseTest {
     @Test
     void testTrackCharts() {
         this.testTopology.input("listening-events")
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(new ListeningEvent(1L, 2L, 3L, 5L, Instant.now()))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 5L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
 
         final KeyValueStore<Long, UserProfile> chartStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
@@ -83,13 +83,13 @@ class ChartProcessorTest extends TopologyBaseTest {
     @Test
     void testMultipleUser() {
         this.testTopology.input("listening-events")
-                .add(new ListeningEvent(1L, 2L, 9L, 4L, Instant.now()))
-                .add(new ListeningEvent(2L, 5L, 3L, 5L, Instant.now()))
-                .add(new ListeningEvent(1L, 3L, 5L, 12L, Instant.now()))
-                .add(new ListeningEvent(4L, 2L, 1L, 6L, Instant.now()))
-                .add(new ListeningEvent(1L, 2L, 12L, 4L, Instant.now()))
-                .add(new ListeningEvent(4L, 1L, 2L, 8L, Instant.now()))
-                .add(new ListeningEvent(3L, 5L, 3L, 7L, Instant.now()));
+                .add(1L, new ListeningEvent(1L, 2L, 9L, 4L, Instant.now()))
+                .add(2L, new ListeningEvent(2L, 5L, 3L, 5L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 3L, 5L, 12L, Instant.now()))
+                .add(4L, new ListeningEvent(4L, 2L, 1L, 6L, Instant.now()))
+                .add(1L, new ListeningEvent(1L, 2L, 12L, 4L, Instant.now()))
+                .add(4L, new ListeningEvent(4L, 1L, 2L, 8L, Instant.now()))
+                .add(3L, new ListeningEvent(3L, 5L, 3L, 7L, Instant.now()));
 
     }
 

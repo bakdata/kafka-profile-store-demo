@@ -1,8 +1,8 @@
 package com.bakdata.profilestore.core.processor;
 
+import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.ProfilestoreMain;
 import com.bakdata.profilestore.core.TopologyBaseTest;
-import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -26,7 +26,7 @@ class LastEventProcessorTest extends TopologyBaseTest {
                         firstInstant.plusSeconds(i))
         ).collect(Collectors.toList());
 
-        timestamps.forEach(event -> this.testTopology.input("listening-events").add(event));
+        timestamps.forEach(event -> this.testTopology.input("listening-events").add(event.getUserId(), event));
 
         final KeyValueStore<Long, UserProfile> profileStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
@@ -40,12 +40,12 @@ class LastEventProcessorTest extends TopologyBaseTest {
         final Instant firstInstant = Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
         this.testTopology.input("listening-events")
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(20)))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(25)))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(18)))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(30)))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, firstInstant))
-                .add(new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(35)));
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(20)))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(25)))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(18)))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(30)))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, firstInstant))
+                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, firstInstant.plusSeconds(35)));
 
         final KeyValueStore<Long, UserProfile> profileStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
