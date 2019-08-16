@@ -43,6 +43,7 @@ import picocli.CommandLine.Command;
         description = "Start KafkaStreams application profile store")
 public class ProfilestoreMain implements Callable<Void> {
     public static final String PROFILE_STORE_NAME = "profile_store";
+    public static final String COUNT_STORE_PREFIX = "profiler-event-count-";
     public static final int TOP_K = 10;
 
     @CommandLine.Option(names = "--application-id", required = true, description = "name of streams application")
@@ -162,6 +163,7 @@ public class ProfilestoreMain implements Callable<Void> {
             // create a stream of counts per user and field and repartition it so that the a count for userId is on
             // the same partition as a event for a user.
             // To trigger the repartition, it is necessary to call through()
+
             final KStream<Long, ChartTuple> countUpdateStream = fieldCountsPerUser
                     .toStream()
                     .map((key, count) ->
@@ -169,7 +171,7 @@ public class ProfilestoreMain implements Callable<Void> {
                                     key.getPrimaryKey(),
                                     new ChartTuple(key.getSecondaryKey(), count)
                             ))
-                    .through("profiler-event-count-" + fieldHandler.type().toString().toLowerCase(), producedSerde);
+                    .through(COUNT_STORE_PREFIX + fieldHandler.type().toString().toLowerCase(), producedSerde);
 
             countUpdateStream.process(() -> new ChartsProcessor(TOP_K, fieldHandler), PROFILE_STORE_NAME);
         }

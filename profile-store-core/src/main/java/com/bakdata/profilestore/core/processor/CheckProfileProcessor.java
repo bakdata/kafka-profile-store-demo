@@ -22,6 +22,7 @@ public class CheckProfileProcessor implements Processor<Long, ListeningEvent> {
     @Override
     public void process(final Long userId, final ListeningEvent listeningEvent) {
         final UserProfile profile = this.profileStore.get(userId);
+        // add default user profile so that the other processors don't have to check for NPE
         if (profile == null) {
             final UserProfile userProfile = new UserProfile(0L, listeningEvent.getTimestamp(), listeningEvent.getTimestamp(),
                     Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
