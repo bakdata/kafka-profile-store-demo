@@ -78,20 +78,4 @@ class ChartProcessorTest extends TopologyBaseTest {
         Assertions.assertEquals(1, second.getCountPlays());
         Assertions.assertEquals(5L, second.getId());
     }
-
-
-    @Test
-    void testMultipleUser() {
-        this.testTopology.input("listening-events")
-                .add(1L, new ListeningEvent(1L, 2L, 9L, 4L, Instant.now()))
-                .add(2L, new ListeningEvent(2L, 5L, 3L, 5L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 3L, 5L, 12L, Instant.now()))
-                .add(4L, new ListeningEvent(4L, 2L, 1L, 6L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 12L, 4L, Instant.now()))
-                .add(4L, new ListeningEvent(4L, 1L, 2L, 8L, Instant.now()))
-                .add(3L, new ListeningEvent(3L, 5L, 3L, 7L, Instant.now()));
-
-    }
-
-
 }
