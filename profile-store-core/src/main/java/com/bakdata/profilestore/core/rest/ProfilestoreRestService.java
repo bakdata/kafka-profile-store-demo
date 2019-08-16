@@ -1,11 +1,9 @@
 package com.bakdata.profilestore.core.rest;
 
-import com.bakdata.profilestore.core.avro.UserProfile;
 import java.net.SocketException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.state.HostInfo;
-import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.servlet.ServletContextHandler;
@@ -17,12 +15,14 @@ import org.glassfish.jersey.servlet.ServletContainer;
 @Slf4j
 public class ProfilestoreRestService {
     private final HostInfo hostInfo;
-    private final UserProfileResource resource;
+    private final UserProfileResource profileResource;
+    private final ProcessorsResource processorsResource;
     private Server server;
 
     public ProfilestoreRestService(final HostInfo hostInfo, final KafkaStreams streams) {
         this.hostInfo = hostInfo;
-        this.resource = new UserProfileResource(streams);
+        this.profileResource = new UserProfileResource(streams, hostInfo);
+        this.processorsResource = new ProcessorsResource(streams);
     }
 
     public void start() throws Exception {
@@ -34,7 +34,8 @@ public class ProfilestoreRestService {
 
         final ResourceConfig config = new ResourceConfig();
         config.register(JacksonFeature.class);
-        config.register(this.resource);
+        config.register(this.profileResource);
+        config.register(this.processorsResource);
 
         final ServletContainer container = new ServletContainer(config);
         final ServletHolder holder = new ServletHolder(container);
