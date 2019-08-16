@@ -31,6 +31,7 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.Grouped;
 import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.KTable;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.HostInfo;
 import org.apache.kafka.streams.state.Stores;
@@ -71,7 +72,7 @@ public class ProfilestoreMain implements Callable<Void> {
     public Void call() throws Exception {
         final Properties properties = this.getProperties();
         final Topology topology = this.buildTopology(properties);
-        log.info(topology.describe().toString());
+        log.debug(topology.describe().toString());
         final KafkaStreams streams = new KafkaStreams(topology, properties);
 
         streams.cleanUp();
@@ -126,8 +127,11 @@ public class ProfilestoreMain implements Callable<Void> {
         final KStream<Long, ListeningEvent> keyedInputStream = builder.stream(this.topicName);
 
         builder.addStateStore(
-                Stores.keyValueStoreBuilder(Stores.inMemoryKeyValueStore(PROFILE_STORE_NAME), Serdes.Long(),
-                        userProfileSerde));
+                Stores.keyValueStoreBuilder(
+                        Stores.inMemoryKeyValueStore(PROFILE_STORE_NAME),
+                        Serdes.Long(),
+                        userProfileSerde)
+        );
 
         keyedInputStream.process(CheckProfileProcessor::new, PROFILE_STORE_NAME);
         keyedInputStream.process(EventCountProcessor::new, PROFILE_STORE_NAME);
@@ -142,25 +146,32 @@ public class ProfilestoreMain implements Callable<Void> {
     private void addTopKProcessor(final SpecificAvroSerde<CompositeKey> compositeKeySerde,
             final SpecificAvroSerde<ChartTuple> chartTupleSerde,
             final KStream<Long, ListeningEvent> inputStream) {
+
         final Serde<Long> longSerde = Serdes.Long();
         final Grouped<CompositeKey, Long> groupedSerde = Grouped.with(compositeKeySerde, longSerde);
         final Produced<Long, ChartTuple> producedSerde = Produced.with(longSerde, chartTupleSerde);
 
         final FieldHandler[] fieldHandlers = {new AlbumHandler(), new ArtistHandler(), new TrackHandler()};
         for (final FieldHandler fieldHandler : fieldHandlers) {
-            // create stream of updated counts
-            inputStream
+
+            final KTable<CompositeKey, Long> fieldCountsPerUser = inputStream
                     .map((key, event) -> KeyValue.pair(key, fieldHandler.extractId(event)))
                     .groupBy(CompositeKey::new, groupedSerde)
-                    .count()
+                    .count();
+
+            // create a stream of counts per user and field and repartition it so that the a count for userId is on
+            // the same partition as a event for a user.
+            // To trigger the repartition, it is necessary to call through()
+            final KStream<Long, ChartTuple> countUpdateStream = fieldCountsPerUser
                     .toStream()
-                    .map((key, count) -> KeyValue
-                            .pair(key.getPrimaryKey(), new ChartTuple(key.getSecondaryKey(), count)))
-                    .through("profiler-event-count-" + fieldHandler.type().toString().toLowerCase(), producedSerde)
-                    .process(() -> new ChartsProcessor(TOP_K, fieldHandler), PROFILE_STORE_NAME);
+                    .map((key, count) ->
+                            KeyValue.pair(
+                                    key.getPrimaryKey(),
+                                    new ChartTuple(key.getSecondaryKey(), count)
+                            ))
+                    .through("profiler-event-count-" + fieldHandler.type().toString().toLowerCase(), producedSerde);
 
-            // process the counts
-
+            countUpdateStream.process(() -> new ChartsProcessor(TOP_K, fieldHandler), PROFILE_STORE_NAME);
         }
     }
 
