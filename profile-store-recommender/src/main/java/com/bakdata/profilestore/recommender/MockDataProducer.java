@@ -22,8 +22,8 @@ import picocli.CommandLine.Command;
 @Command(name = "mock-data-producer")
 public class MockDataProducer implements Callable<Void> {
     private static final long TIMEOUT = 100L;
-    private final Map<Long, Long> artistAlbumMap = new HashMap<>();
-    private final Map<Long, Long> albumTrackMap = new HashMap<>();
+    private final Map<Long, Long> trackToAlbum = new HashMap<>();
+    private final Map<Long, Long> albumToArtist = new HashMap<>();
 
     @CommandLine.Option(names = "--bootstrap-server", defaultValue = "localhost:29092")
     private String bootstrapServers;
@@ -34,11 +34,26 @@ public class MockDataProducer implements Callable<Void> {
     @CommandLine.Option(names = "--topic", defaultValue = "listening-events")
     private String topic;
 
+    @CommandLine.Option(names = "--user", defaultValue = "200")
+    private int user;
+
+    @CommandLine.Option(names = "--artists", defaultValue = "200")
+    private int artists;
+
+    @CommandLine.Option(names = "--albums", defaultValue = "500")
+    private int albums;
+
+    @CommandLine.Option(names = "--tracks", defaultValue = "1000")
+    private int tracks;
+
+    @CommandLine.Option(names = "--delay", defaultValue = "900")
+    private int delay;
+
     @Override
     public Void call() throws Exception {
 
         log.info("Connecting to Kafka cluster via bootstrap servers {}", this.bootstrapServers);
-        log.info("Connecting to Confluent schema registry at {}", this.schemaRegistryUrl);
+        log.info("Connecting to schema registry at {}", this.schemaRegistryUrl);
 
         final Properties props = new Properties();
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, this.bootstrapServers);
@@ -48,27 +63,30 @@ public class MockDataProducer implements Callable<Void> {
         final SpecificAvroSerializer<ListeningEvent> specificAvroSerializer = new SpecificAvroSerializer<>();
         specificAvroSerializer.configure(serdeConfig, false);
 
-        final KafkaProducer<String, ListeningEvent> eventProducer = new KafkaProducer<>(props,
-                Serdes.String().serializer(),
+        final KafkaProducer<Long, ListeningEvent> eventProducer = new KafkaProducer<>(props,
+                Serdes.Long().serializer(),
                 specificAvroSerializer);
 
         while (true) {
             final ListeningEvent listeningEvent = this.createRandomEvent();
-            eventProducer.send(new ProducerRecord<>(this.topic, "", listeningEvent));
+            log.info("Write event {}", listeningEvent);
+
+            eventProducer.send(new ProducerRecord<>(this.topic, listeningEvent.getUserId(), listeningEvent));
             Thread.sleep(TIMEOUT);
         }
     }
 
     private ListeningEvent createRandomEvent() {
-        final long artistId = ThreadLocalRandom.current().nextLong(2000);
-        final long albumId = this.artistAlbumMap.getOrDefault(artistId, ThreadLocalRandom.current().nextLong(10_000));
-        this.artistAlbumMap.putIfAbsent(artistId, albumId);
-        final long trackId = this.albumTrackMap.getOrDefault(albumId, ThreadLocalRandom.current().nextLong(100_000));
-        this.albumTrackMap.putIfAbsent(albumId, trackId);
+        final long trackId = ThreadLocalRandom.current().nextLong(this.tracks);
+        final long albumId = this.trackToAlbum.getOrDefault(trackId, ThreadLocalRandom.current().nextLong(
+                this.albums));
+        this.trackToAlbum.putIfAbsent(trackId, albumId);
+        final long artistId =
+                this.albumToArtist.getOrDefault(albumId, ThreadLocalRandom.current().nextLong(this.artists));
+        this.albumToArtist.putIfAbsent(albumId, trackId);
 
-        return new ListeningEvent(ThreadLocalRandom.current().nextLong(15_000), artistId, albumId, trackId,
-                Instant.now().plusMillis(ThreadLocalRandom.current().nextLong(900)));
-
+        return new ListeningEvent(ThreadLocalRandom.current().nextLong(this.user), artistId, albumId, trackId,
+                Instant.now().minusMillis(ThreadLocalRandom.current().nextLong(this.delay)));
     }
 
 

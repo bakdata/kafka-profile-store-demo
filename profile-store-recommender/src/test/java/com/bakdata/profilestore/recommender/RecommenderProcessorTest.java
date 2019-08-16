@@ -2,7 +2,6 @@ package com.bakdata.profilestore.recommender;
 
 import com.bakdata.fluent_kafka_streams_tests.TestInput;
 import com.bakdata.fluent_kafka_streams_tests.junit5.TestTopologyExtension;
-import com.bakdata.profilestore.common.FieldType;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import com.bakdata.profilestore.recommender.graph.KeyValueGraph;

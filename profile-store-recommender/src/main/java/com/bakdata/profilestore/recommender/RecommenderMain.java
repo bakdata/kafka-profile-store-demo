@@ -1,6 +1,5 @@
 package com.bakdata.profilestore.recommender;
 
-import com.bakdata.profilestore.common.FieldType;
 import com.bakdata.profilestore.recommender.avro.AdjacencyList;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import com.bakdata.profilestore.recommender.graph.KeyValueGraph;

@@ -2,9 +2,10 @@ package com.bakdata.profilestore.recommender.rest;
 
 import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
 
-import com.bakdata.profilestore.common.FieldType;
+import com.bakdata.profilestore.recommender.FieldType;
 import com.bakdata.profilestore.recommender.algorithm.Salsa;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -46,7 +47,11 @@ public class RestResource {
             @DefaultValue("0.1") @QueryParam("resetProbability") final float resetProbability) {
         log.info("Request for user {} and type {}", userId, type);
         final FieldType recommendationType = FieldType.valueOf(type.toUpperCase());
-        return new Salsa(this.graphs.get(recommendationType), new Random())
-                .compute(userId, walks, walkLength, resetProbability, limit);
+        try {
+            return new Salsa(this.graphs.get(recommendationType), new Random())
+                    .compute(userId, walks, walkLength, resetProbability, limit);
+        } catch (RuntimeException e) {
+            return Collections.emptyList();
+        }
     }
 }

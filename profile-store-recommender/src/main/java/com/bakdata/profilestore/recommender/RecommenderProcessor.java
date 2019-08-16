@@ -1,11 +1,11 @@
 package com.bakdata.profilestore.recommender;
 
-import com.bakdata.profilestore.common.FieldType;
-import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.recommender.avro.AdjacencyList;
+import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.recommender.graph.WritableKeyValueGraph;
 import com.bakdata.profilestore.recommender.graph.WriteableBipartiteGraph;
 import java.util.EnumMap;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
@@ -13,6 +13,7 @@ import org.apache.kafka.streams.state.KeyValueStore;
 /**
  * Processor updates the left and right index for the random walks
  */
+@Slf4j
 public class RecommenderProcessor implements Processor<byte[], ListeningEvent> {
     private final EnumMap<FieldType, WriteableBipartiteGraph> graphs =
             new EnumMap<>(FieldType.class);

@@ -1,6 +1,6 @@
 package com.bakdata.profilestore.recommender.rest;
 
-import com.bakdata.profilestore.common.FieldType;
+import com.bakdata.profilestore.recommender.FieldType;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import java.net.SocketException;
 import java.util.Map;
@@ -13,8 +13,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Slf4j
 public class RestService {

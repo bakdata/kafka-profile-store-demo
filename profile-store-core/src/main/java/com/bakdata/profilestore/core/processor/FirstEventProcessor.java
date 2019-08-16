@@ -1,8 +1,8 @@
 package com.bakdata.profilestore.core.processor;
 
+import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.ProfilestoreMain;
 import com.bakdata.profilestore.core.avro.UserProfile;
-import com.bakdata.profilestore.common.avro.ListeningEvent;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
