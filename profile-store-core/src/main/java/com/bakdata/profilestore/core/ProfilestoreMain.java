@@ -43,7 +43,7 @@ import picocli.CommandLine.Command;
         description = "Start KafkaStreams application profile store")
 public class ProfilestoreMain implements Callable<Void> {
     public static final String PROFILE_STORE_NAME = "profile_store";
-    public static final String COUNT_STORE_PREFIX = "profiler-event-count-";
+    public static final String COUNT_TOPIC_PREFIX = "profiler-event-count-";
     public static final int TOP_K = 10;
 
     @CommandLine.Option(names = "--application-id", required = true, description = "name of streams application")
@@ -171,7 +171,7 @@ public class ProfilestoreMain implements Callable<Void> {
                                     key.getPrimaryKey(),
                                     new ChartRecord(key.getSecondaryKey(), count)
                             ))
-                    .through(COUNT_STORE_PREFIX + fieldHandler.type().toString().toLowerCase(), producedSerde);
+                    .through(COUNT_TOPIC_PREFIX + fieldHandler.type().toString().toLowerCase(), producedSerde);
 
             countUpdateStream.process(() -> new ChartsProcessor(TOP_K, fieldHandler), PROFILE_STORE_NAME);
         }
