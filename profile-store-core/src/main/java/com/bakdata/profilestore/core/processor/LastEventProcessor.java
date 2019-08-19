@@ -18,7 +18,7 @@ public class LastEventProcessor implements Processor<Long, ListeningEvent> {
 
     @Override
     public void process(final Long userId, final ListeningEvent listeningEvent) {
-        final UserProfile profile = this.profileStore.get(userId);
+        final UserProfile profile = DefaultUserProfile.getOrDefault(this.profileStore.get(userId));
         if (profile.getLastListeningEvent() == null
                 || profile.getLastListeningEvent().compareTo(listeningEvent.getTimestamp()) < 0) {
             profile.setLastListeningEvent(listeningEvent.getTimestamp());

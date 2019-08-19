@@ -9,7 +9,6 @@ import com.bakdata.profilestore.core.fields.ArtistHandler;
 import com.bakdata.profilestore.core.fields.FieldHandler;
 import com.bakdata.profilestore.core.fields.TrackHandler;
 import com.bakdata.profilestore.core.processor.ChartsProcessor;
-import com.bakdata.profilestore.core.processor.ProfileChecker;
 import com.bakdata.profilestore.core.processor.EventCountProcessor;
 import com.bakdata.profilestore.core.processor.FirstEventProcessor;
 import com.bakdata.profilestore.core.processor.LastEventProcessor;
@@ -42,7 +41,7 @@ import picocli.CommandLine.Command;
 @Command(name = "profile-store", mixinStandardHelpOptions = true,
         description = "Start KafkaStreams application profile store")
 public class ProfilestoreMain implements Callable<Void> {
-    public static final String PROFILE_STORE_NAME = "profile_store";
+    public static final String PROFILE_STORE_NAME = "profile-store";
     public static final String COUNT_TOPIC_PREFIX = "profiler-event-count-";
     public static final int TOP_K = 10;
 
@@ -121,8 +120,8 @@ public class ProfilestoreMain implements Callable<Void> {
         final SpecificAvroSerde<UserProfile> userProfileSerde = new SpecificAvroSerde<>();
         userProfileSerde.configure(serdeConfig, false);
 
-        final SpecificAvroSerde<ChartRecord> chartTupleSerde = new SpecificAvroSerde<>();
-        chartTupleSerde.configure(serdeConfig, false);
+        final SpecificAvroSerde<ChartRecord> chartRecordSerde = new SpecificAvroSerde<>();
+        chartRecordSerde.configure(serdeConfig, false);
 
         final StreamsBuilder builder = new StreamsBuilder();
 
@@ -134,25 +133,23 @@ public class ProfilestoreMain implements Callable<Void> {
         );
 
         final KStream<Long, ListeningEvent> inputStream = builder.stream(this.topicName);
-        final KStream<Long, ListeningEvent> checkedInputStream =
-                inputStream.transform(ProfileChecker::new, PROFILE_STORE_NAME);
 
-        checkedInputStream.process(EventCountProcessor::new, PROFILE_STORE_NAME);
-        checkedInputStream.process(FirstEventProcessor::new, PROFILE_STORE_NAME);
-        checkedInputStream.process(LastEventProcessor::new, PROFILE_STORE_NAME);
+        inputStream.process(EventCountProcessor::new, PROFILE_STORE_NAME);
+        inputStream.process(FirstEventProcessor::new, PROFILE_STORE_NAME);
+        inputStream.process(LastEventProcessor::new, PROFILE_STORE_NAME);
 
-        this.addTopKProcessor(compositeKeySerde, chartTupleSerde, checkedInputStream);
+        this.addTopKProcessor(compositeKeySerde, chartRecordSerde, inputStream);
 
         return builder.build();
     }
 
     private void addTopKProcessor(final SpecificAvroSerde<CompositeKey> compositeKeySerde,
-            final SpecificAvroSerde<ChartRecord> chartTupleSerde,
+            final SpecificAvroSerde<ChartRecord> chartRecordSerde,
             final KStream<Long, ListeningEvent> inputStream) {
 
         final Serde<Long> longSerde = Serdes.Long();
         final Grouped<CompositeKey, Long> groupedSerde = Grouped.with(compositeKeySerde, longSerde);
-        final Produced<Long, ChartRecord> producedSerde = Produced.with(longSerde, chartTupleSerde);
+        final Produced<Long, ChartRecord> producedSerde = Produced.with(longSerde, chartRecordSerde);
 
         final FieldHandler[] fieldHandlers = {new AlbumHandler(), new ArtistHandler(), new TrackHandler()};
         for (final FieldHandler fieldHandler : fieldHandlers) {

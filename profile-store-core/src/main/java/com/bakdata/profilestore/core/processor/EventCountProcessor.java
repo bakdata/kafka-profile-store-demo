@@ -20,7 +20,7 @@ public class EventCountProcessor implements Processor<Long, ListeningEvent> {
 
     @Override
     public void process(final Long userId, final ListeningEvent listeningEvent) {
-        final UserProfile userProfile = this.profileStore.get(userId);
+        final UserProfile userProfile = DefaultUserProfile.getOrDefault(this.profileStore.get(userId));
         final long eventCount = userProfile.getEventCount();
         userProfile.setEventCount(eventCount + 1);
         this.profileStore.put(userId, userProfile);
