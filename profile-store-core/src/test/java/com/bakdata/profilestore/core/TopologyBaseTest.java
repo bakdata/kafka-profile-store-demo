@@ -6,7 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 @Slf4j
-public class TopologyBaseTest {
+public abstract class TopologyBaseTest {
     private final ProfilestoreMain main = new ProfilestoreMain();
 
     @RegisterExtension
