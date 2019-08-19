@@ -1,6 +1,6 @@
 package com.bakdata.profilestore.core.processor;
 
-import com.bakdata.profilestore.common.avro.ListeningEvent;
+import com.bakdata.profilestore.core.ListeningEventBuilder;
 import com.bakdata.profilestore.core.ProfilestoreMain;
 import com.bakdata.profilestore.core.TopologyBaseTest;
 import com.bakdata.profilestore.core.avro.ChartRecord;
@@ -13,12 +13,17 @@ import org.junit.jupiter.api.Test;
 class ChartProcessorTest extends TopologyBaseTest {
     @Test
     void testAlbumCharts() {
+        final ListeningEventBuilder builder = new ListeningEventBuilder();
+
+        builder.setTimestamp(Instant.now())
+                .setArtistId(2L);
+
         this.testTopology.input("listening-events")
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 5L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 2L, 4L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(2L, new ListeningEvent(2L, 2L, 3L, 4L, Instant.now()));
+                .add(1L, builder.setUserId(1L).setAlbumId(3L).setTrackId(4L).build())
+                .add(1L, builder.setUserId(1L).setAlbumId(3L).setTrackId(5L).build())
+                .add(1L, builder.setUserId(1L).setAlbumId(2L).setTrackId(4L).build())
+                .add(1L, builder.setUserId(1L).setAlbumId(3L).setTrackId(3L).build())
+                .add(2L, builder.setUserId(2L).setAlbumId(3L).setTrackId(4L).build());
 
         final KeyValueStore<Long, UserProfile> chartStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
@@ -35,14 +40,19 @@ class ChartProcessorTest extends TopologyBaseTest {
 
     @Test
     void testArtistCharts() {
+        final ListeningEventBuilder builder = new ListeningEventBuilder();
+
+        builder.setTimestamp(Instant.now())
+                .setUserId(1L);
+
         this.testTopology.input("listening-events")
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 5L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 3L, 4L, 5L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 3L, 4L, 5L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
+                .add(1L, builder.setArtistId(2L).setAlbumId(3L).setTrackId(4L).build())
+                .add(1L, builder.setArtistId(2L).setAlbumId(3L).setTrackId(5L).build())
+                .add(1L, builder.setArtistId(2L).setAlbumId(3L).setTrackId(4L).build())
+                .add(1L, builder.setArtistId(2L).setAlbumId(3L).setTrackId(4L).build())
+                .add(1L, builder.setArtistId(3L).setAlbumId(4L).setTrackId(5L).build())
+                .add(1L, builder.setArtistId(3L).setAlbumId(4L).setTrackId(5L).build())
+                .add(1L, builder.setArtistId(2L).setAlbumId(3L).setTrackId(4L).build());
 
         final KeyValueStore<Long, UserProfile> chartStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
@@ -59,12 +69,19 @@ class ChartProcessorTest extends TopologyBaseTest {
 
     @Test
     void testTrackCharts() {
+        final ListeningEventBuilder builder = new ListeningEventBuilder();
+
+        builder.setUserId(1L)
+                .setArtistId(2L)
+                .setAlbumId(3L)
+                .setTimestamp(Instant.now());
+
         this.testTopology.input("listening-events")
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 5L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()))
-                .add(1L, new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
+                .add(1L, builder.setTrackId(4L).build())
+                .add(1L, builder.setTrackId(5L).build())
+                .add(1L, builder.setTrackId(4L).build())
+                .add(1L, builder.setTrackId(4L).build())
+                .add(1L, builder.setTrackId(4L).build());
 
         final KeyValueStore<Long, UserProfile> chartStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
