@@ -1,7 +1,6 @@
 package com.bakdata.profilestore.core;
 
 import com.bakdata.profilestore.core.avro.ChartRecord;
-import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -17,17 +16,28 @@ public class UserProfileTest extends TopologyBaseTest {
     @Test
     void testSingleUser() {
         final Instant firstInstant = java.time.Instant.now().truncatedTo(ChronoUnit.MILLIS);
+        final ListeningEventBuilder builder = new ListeningEventBuilder();
+        builder.setUserId(1L);
 
         this.testTopology.input("listening-events")
-                .add(1L, new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(20)))
-                .add(1L, new ListeningEvent(1L, 1L, 1L, 2L, firstInstant.plusSeconds(25)))
-                .add(1L, new ListeningEvent(1L, 1L, 1L, 3L, firstInstant.plusSeconds(18)))
-                .add(1L, new ListeningEvent(1L, 2L, 10L, 10L, firstInstant.plusSeconds(30)))
-                .add(1L, new ListeningEvent(1L, 1L, 2L, 4L, firstInstant.plusSeconds(5)))
-                .add(1L, new ListeningEvent(1L, 2L, 10L, 25L, firstInstant.plusSeconds(12)))
-                .add(1L, new ListeningEvent(1L, 2L, 10L, 11L, firstInstant.plusSeconds(521)))
-                .add(1L, new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(235)))
-                .add(1L, new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(346)));
+                .add(1L, builder.setArtistId(1L).setAlbumId(1L)
+                        .setTrackId(1L).setTimestamp(firstInstant.plusSeconds(20)).build())
+                .add(1L, builder.setArtistId(1L).setAlbumId(1L)
+                        .setTrackId(2L).setTimestamp(firstInstant.plusSeconds(25)).build())
+                .add(1L, builder.setArtistId(1L).setAlbumId(1L)
+                        .setTrackId(3L).setTimestamp(firstInstant.plusSeconds(18)).build())
+                .add(1L, builder.setArtistId(2L).setAlbumId(10L)
+                        .setTrackId(10L).setTimestamp(firstInstant.plusSeconds(30)).build())
+                .add(1L, builder.setArtistId(1L).setAlbumId(2L)
+                        .setTrackId(4L).setTimestamp(firstInstant.plusSeconds(5)).build())
+                .add(1L, builder.setArtistId(2L).setAlbumId(10L)
+                        .setTrackId(25L).setTimestamp(firstInstant.plusSeconds(12)).build())
+                .add(1L, builder.setArtistId(2L).setAlbumId(10L)
+                        .setTrackId(11L).setTimestamp(firstInstant.plusSeconds(52)).build())
+                .add(1L, builder.setArtistId(1L).setAlbumId(1L)
+                        .setTrackId(1L).setTimestamp(firstInstant.plusSeconds(235)).build())
+                .add(1L, builder.setArtistId(1L).setAlbumId(1L)
+                        .setTrackId(1L).setTimestamp(firstInstant.plusSeconds(346)).build());
 
         final KeyValueStore<Long, UserProfile> profileStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);

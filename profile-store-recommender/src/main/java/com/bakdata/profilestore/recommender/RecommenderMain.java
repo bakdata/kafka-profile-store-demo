@@ -27,8 +27,8 @@ import picocli.CommandLine.Command;
 @Command(name = "recommender", mixinStandardHelpOptions = true,
         description = "Start KafkaStreams application recommender")
 public class RecommenderMain implements Callable<Void> {
-    public static final String LEFT_INDEX_NAME = "leftIndex";
-    public static final String RIGHT_INDEX_NAME = "rightIndex";
+    public static final String LEFT_INDEX_NAME = "recommender-left-index";
+    public static final String RIGHT_INDEX_NAME = "recommender-right-index";
 
     @CommandLine.Option(names = "--application-id", required = true, description = "name of streams application")
     private String applicationId;
