@@ -34,19 +34,19 @@ public class MockDataProducer implements Callable<Void> {
     @CommandLine.Option(names = "--topic", defaultValue = "listening-events")
     private String topic;
 
-    @CommandLine.Option(names = "--user", defaultValue = "200")
-    private int user;
+    @CommandLine.Option(names = "--user", defaultValue = "200", description = "number of max distinct user")
+    private int maxDistinctUser;
 
-    @CommandLine.Option(names = "--artists", defaultValue = "200")
-    private int artists;
+    @CommandLine.Option(names = "--artists", defaultValue = "200", description = "number of max distinct artists")
+    private int maxDistinctArtists;
 
-    @CommandLine.Option(names = "--albums", defaultValue = "500")
-    private int albums;
+    @CommandLine.Option(names = "--albums", defaultValue = "500", description = "number of max distinct albums")
+    private int maxDistinctAlbums;
 
-    @CommandLine.Option(names = "--tracks", defaultValue = "1000")
-    private int tracks;
+    @CommandLine.Option(names = "--tracks", defaultValue = "1000", description = "number of max distinct tracks")
+    private int maxDistinctTracks;
 
-    @CommandLine.Option(names = "--delay", defaultValue = "900")
+    @CommandLine.Option(names = "--delay", defaultValue = "900", description = "max delay for processing time")
     private int delay;
 
     @Override
@@ -77,15 +77,15 @@ public class MockDataProducer implements Callable<Void> {
     }
 
     private ListeningEvent createRandomEvent() {
-        final long trackId = ThreadLocalRandom.current().nextLong(this.tracks);
+        final long trackId = ThreadLocalRandom.current().nextLong(this.maxDistinctTracks);
         final long albumId = this.trackToAlbum.getOrDefault(trackId, ThreadLocalRandom.current().nextLong(
-                this.albums));
+                this.maxDistinctAlbums));
         this.trackToAlbum.putIfAbsent(trackId, albumId);
         final long artistId =
-                this.albumToArtist.getOrDefault(albumId, ThreadLocalRandom.current().nextLong(this.artists));
+                this.albumToArtist.getOrDefault(albumId, ThreadLocalRandom.current().nextLong(this.maxDistinctArtists));
         this.albumToArtist.putIfAbsent(albumId, trackId);
 
-        return new ListeningEvent(ThreadLocalRandom.current().nextLong(this.user), artistId, albumId, trackId,
+        return new ListeningEvent(ThreadLocalRandom.current().nextLong(this.maxDistinctUser), artistId, albumId, trackId,
                 Instant.now().minusMillis(ThreadLocalRandom.current().nextLong(this.delay)));
     }
 
