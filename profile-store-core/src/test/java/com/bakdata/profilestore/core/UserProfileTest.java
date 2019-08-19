@@ -1,6 +1,6 @@
 package com.bakdata.profilestore.core;
 
-import com.bakdata.profilestore.core.avro.ChartTuple;
+import com.bakdata.profilestore.core.avro.ChartRecord;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
@@ -38,25 +38,25 @@ public class UserProfileTest extends TopologyBaseTest {
 
         MatcherAssert.assertThat(userProfile.getTopTenAlbums(),
                 IsIterableContainingInOrder
-                        .contains(new ChartTuple(1L, 5L),
-                                new ChartTuple(10L, 3L),
-                                new ChartTuple(2L, 1L)));
+                        .contains(new ChartRecord(1L, 5L),
+                                new ChartRecord(10L, 3L),
+                                new ChartRecord(2L, 1L)));
 
         MatcherAssert.assertThat(userProfile.getTopTenArtist(),
                 IsIterableContainingInOrder
-                        .contains(new ChartTuple(1L, 6L),
-                                new ChartTuple(2L, 3L)));
+                        .contains(new ChartRecord(1L, 6L),
+                                new ChartRecord(2L, 3L)));
 
-        Assertions.assertEquals(new ChartTuple(1L, 3L), userProfile.getTopTenTracks().get(0));
+        Assertions.assertEquals(new ChartRecord(1L, 3L), userProfile.getTopTenTracks().get(0));
 
         MatcherAssert.assertThat(userProfile.getTopTenTracks().subList(1, userProfile.getTopTenTracks().size()),
                 IsIterableContainingInAnyOrder.containsInAnyOrder(
-                        new ChartTuple(2L, 1L),
-                        new ChartTuple(3L, 1L),
-                        new ChartTuple(10L, 1L),
-                        new ChartTuple(4L, 1L),
-                        new ChartTuple(25L, 1L),
-                        new ChartTuple(11L, 1L)
+                        new ChartRecord(2L, 1L),
+                        new ChartRecord(3L, 1L),
+                        new ChartRecord(10L, 1L),
+                        new ChartRecord(4L, 1L),
+                        new ChartRecord(25L, 1L),
+                        new ChartRecord(11L, 1L)
                 ));
 
     }

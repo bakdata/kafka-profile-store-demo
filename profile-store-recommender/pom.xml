@@ -199,7 +199,7 @@
                         <configuration>
                             <sourceDirectory>${project.basedir}/src/main/resources/avro
                             </sourceDirectory>
-                            <outputDirectory>${project.basedir}/src/main/java/</outputDirectory>
+                            <outputDirectory>${project.build.directory}/generated-sources</outputDirectory>
                             <stringType>String</stringType>
                         </configuration>
                     </execution>

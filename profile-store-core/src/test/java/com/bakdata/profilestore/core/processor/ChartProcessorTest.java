@@ -3,7 +3,7 @@ package com.bakdata.profilestore.core.processor;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.ProfilestoreMain;
 import com.bakdata.profilestore.core.TopologyBaseTest;
-import com.bakdata.profilestore.core.avro.ChartTuple;
+import com.bakdata.profilestore.core.avro.ChartRecord;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
 import org.apache.kafka.streams.state.KeyValueStore;
@@ -23,8 +23,8 @@ class ChartProcessorTest extends TopologyBaseTest {
         final KeyValueStore<Long, UserProfile> chartStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
 
-        final ChartTuple first = chartStore.get(1L).getTopTenAlbums().get(0);
-        final ChartTuple second = chartStore.get(1L).getTopTenAlbums().get(1);
+        final ChartRecord first = chartStore.get(1L).getTopTenAlbums().get(0);
+        final ChartRecord second = chartStore.get(1L).getTopTenAlbums().get(1);
 
         Assertions.assertEquals(3, first.getCountPlays());
         Assertions.assertEquals(3L, first.getId());
@@ -47,8 +47,8 @@ class ChartProcessorTest extends TopologyBaseTest {
         final KeyValueStore<Long, UserProfile> chartStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
 
-        final ChartTuple first = chartStore.get(1L).getTopTenArtist().get(0);
-        final ChartTuple second = chartStore.get(1L).getTopTenArtist().get(1);
+        final ChartRecord first = chartStore.get(1L).getTopTenArtist().get(0);
+        final ChartRecord second = chartStore.get(1L).getTopTenArtist().get(1);
 
         Assertions.assertEquals(5, first.getCountPlays());
         Assertions.assertEquals(2L, first.getId());
@@ -69,8 +69,8 @@ class ChartProcessorTest extends TopologyBaseTest {
         final KeyValueStore<Long, UserProfile> chartStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
 
-        final ChartTuple first = chartStore.get(1L).getTopTenTracks().get(0);
-        final ChartTuple second = chartStore.get(1L).getTopTenTracks().get(1);
+        final ChartRecord first = chartStore.get(1L).getTopTenTracks().get(0);
+        final ChartRecord second = chartStore.get(1L).getTopTenTracks().get(1);
 
         Assertions.assertEquals(4, first.getCountPlays());
         Assertions.assertEquals(4L, first.getId());

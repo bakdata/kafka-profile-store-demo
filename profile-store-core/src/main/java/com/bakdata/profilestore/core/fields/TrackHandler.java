@@ -2,7 +2,7 @@ package com.bakdata.profilestore.core.fields;
 
 import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.FieldType;
-import com.bakdata.profilestore.core.avro.ChartTuple;
+import com.bakdata.profilestore.core.avro.ChartRecord;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.util.List;
 
@@ -14,13 +14,13 @@ public class TrackHandler implements FieldHandler {
     }
 
     @Override
-    public UserProfile updateProfile(final UserProfile userProfile, final List<ChartTuple> charts) {
+    public UserProfile updateProfile(final UserProfile userProfile, final List<ChartRecord> charts) {
         userProfile.setTopTenTracks(charts);
         return userProfile;
     }
 
     @Override
-    public List<ChartTuple> getCharts(final UserProfile userProfile) {
+    public List<ChartRecord> getCharts(final UserProfile userProfile) {
         return userProfile.getTopTenTracks();
     }
 

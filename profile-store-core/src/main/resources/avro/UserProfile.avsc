@@ -1,7 +1,7 @@
 [
   {
     "namespace": "com.bakdata.profilestore.core.avro",
-    "name": "ChartTuple",
+    "name": "ChartRecord",
     "type": "record",
     "fields": [
       {
@@ -41,21 +41,21 @@
         "name": "topTenArtist",
         "type": {
           "type": "array",
-          "items": "com.bakdata.profilestore.core.avro.ChartTuple"
+          "items": "com.bakdata.profilestore.core.avro.ChartRecord"
         }
       },
       {
         "name": "topTenAlbums",
         "type": {
           "type": "array",
-          "items": "com.bakdata.profilestore.core.avro.ChartTuple"
+          "items": "com.bakdata.profilestore.core.avro.ChartRecord"
         }
       },
       {
         "name": "topTenTracks",
         "type": {
           "type": "array",
-          "items": "com.bakdata.profilestore.core.avro.ChartTuple"
+          "items": "com.bakdata.profilestore.core.avro.ChartRecord"
         }
       }
     ]

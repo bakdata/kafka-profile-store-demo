@@ -1,7 +1,7 @@
 package com.bakdata.profilestore.core;
 
 import com.bakdata.profilestore.common.avro.ListeningEvent;
-import com.bakdata.profilestore.core.avro.ChartTuple;
+import com.bakdata.profilestore.core.avro.ChartRecord;
 import com.bakdata.profilestore.core.avro.CompositeKey;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import com.bakdata.profilestore.core.fields.AlbumHandler;
@@ -121,7 +121,7 @@ public class ProfilestoreMain implements Callable<Void> {
         final SpecificAvroSerde<UserProfile> userProfileSerde = new SpecificAvroSerde<>();
         userProfileSerde.configure(serdeConfig, false);
 
-        final SpecificAvroSerde<ChartTuple> chartTupleSerde = new SpecificAvroSerde<>();
+        final SpecificAvroSerde<ChartRecord> chartTupleSerde = new SpecificAvroSerde<>();
         chartTupleSerde.configure(serdeConfig, false);
 
         final StreamsBuilder builder = new StreamsBuilder();
@@ -145,12 +145,12 @@ public class ProfilestoreMain implements Callable<Void> {
     }
 
     private void addTopKProcessor(final SpecificAvroSerde<CompositeKey> compositeKeySerde,
-            final SpecificAvroSerde<ChartTuple> chartTupleSerde,
+            final SpecificAvroSerde<ChartRecord> chartTupleSerde,
             final KStream<Long, ListeningEvent> inputStream) {
 
         final Serde<Long> longSerde = Serdes.Long();
         final Grouped<CompositeKey, Long> groupedSerde = Grouped.with(compositeKeySerde, longSerde);
-        final Produced<Long, ChartTuple> producedSerde = Produced.with(longSerde, chartTupleSerde);
+        final Produced<Long, ChartRecord> producedSerde = Produced.with(longSerde, chartTupleSerde);
 
         final FieldHandler[] fieldHandlers = {new AlbumHandler(), new ArtistHandler(), new TrackHandler()};
         for (final FieldHandler fieldHandler : fieldHandlers) {
@@ -164,12 +164,12 @@ public class ProfilestoreMain implements Callable<Void> {
             // the same partition as a event for a user.
             // To trigger the repartition, it is necessary to call through()
 
-            final KStream<Long, ChartTuple> countUpdateStream = fieldCountsPerUser
+            final KStream<Long, ChartRecord> countUpdateStream = fieldCountsPerUser
                     .toStream()
                     .map((key, count) ->
                             KeyValue.pair(
                                     key.getPrimaryKey(),
-                                    new ChartTuple(key.getSecondaryKey(), count)
+                                    new ChartRecord(key.getSecondaryKey(), count)
                             ))
                     .through(COUNT_STORE_PREFIX + fieldHandler.type().toString().toLowerCase(), producedSerde);
 
