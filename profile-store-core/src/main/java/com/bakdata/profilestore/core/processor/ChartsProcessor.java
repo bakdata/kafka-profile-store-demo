@@ -4,7 +4,8 @@ import com.bakdata.profilestore.core.ProfilestoreMain;
 import com.bakdata.profilestore.core.avro.ChartTuple;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import com.bakdata.profilestore.core.fields.FieldHandler;
-import java.util.Comparator;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.processor.Processor;
@@ -38,26 +39,45 @@ public class ChartsProcessor implements Processor<Long, ChartTuple> {
         this.profileStore.put(userId, updatedProfile);
     }
 
-
     private List<ChartTuple> updateCharts(final List<ChartTuple> charts, final ChartTuple newCount) {
+        if (charts.isEmpty()) {
+            return Collections.singletonList(newCount);
+        }
+        // if the charts are full and the last element has more plays than the new tuple
+        // there is no change
+        else if (charts.size() == this.chartSize
+                && charts.get(this.chartSize - 1).getCountPlays() > newCount.getCountPlays()) {
+            return charts;
+        } else {
+            return this.addNewCount(charts, newCount);
+        }
+    }
+
+    private List<ChartTuple> addNewCount(final List<ChartTuple> charts, final ChartTuple newCount) {
         boolean wasAdded = false;
-        for (int i = 0; i < charts.size(); i++) {
-            if (charts.get(i).getId() == newCount.getId()) {
-                if (charts.get(i).getCountPlays() > newCount.getCountPlays()) {
-                    return charts;
-                } else {
-                    charts.set(i, newCount);
-                    wasAdded = true;
-                    break;
+        final List<ChartTuple> updatedCharts = new ArrayList<>(this.chartSize);
+        for (final ChartTuple currentTuple : charts) {
+            if (!wasAdded && newCount.getCountPlays() >= currentTuple.getCountPlays()) {
+                updatedCharts.add(newCount);
+                wasAdded = true;
+            }
+
+            if (updatedCharts.size() < this.chartSize) {
+                // add current tuple if it has more plays or
+                // it has a different id and the new tuple was already added
+                if (currentTuple.getCountPlays() > newCount.getCountPlays() ||
+                        (wasAdded && currentTuple.getId() != newCount.getId())) {
+                    updatedCharts.add(currentTuple);
                 }
             }
         }
-        if (charts.isEmpty() || !wasAdded) {
-            charts.add(newCount);
+
+        // add if new the tuple has the smallest count but charts are not full yet
+        if (!wasAdded && updatedCharts.size() < this.chartSize) {
+            updatedCharts.add(newCount);
         }
-        charts.sort(Comparator.comparingLong(ChartTuple::getCountPlays).reversed());
-        final int index = charts.size() <= this.chartSize ? charts.size() : charts.size() - 1;
-        return charts.subList(0, index);
+
+        return updatedCharts;
     }
 
     @Override
