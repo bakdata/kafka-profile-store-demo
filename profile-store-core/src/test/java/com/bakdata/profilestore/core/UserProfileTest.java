@@ -19,15 +19,15 @@ public class UserProfileTest extends TopologyBaseTest {
         final Instant firstInstant = java.time.Instant.now().truncatedTo(ChronoUnit.MILLIS);
 
         this.testTopology.input("listening-events")
-                .add(new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(20)))
-                .add(new ListeningEvent(1L, 1L, 1L, 2L, firstInstant.plusSeconds(25)))
-                .add(new ListeningEvent(1L, 1L, 1L, 3L, firstInstant.plusSeconds(18)))
-                .add(new ListeningEvent(1L, 2L, 10L, 10L, firstInstant.plusSeconds(30)))
-                .add(new ListeningEvent(1L, 1L, 2L, 4L, firstInstant.plusSeconds(5)))
-                .add(new ListeningEvent(1L, 2L, 10L, 25L, firstInstant.plusSeconds(12)))
-                .add(new ListeningEvent(1L, 2L, 10L, 11L, firstInstant.plusSeconds(521)))
-                .add(new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(235)))
-                .add(new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(346)));
+                .add(1L, new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(20)))
+                .add(1L, new ListeningEvent(1L, 1L, 1L, 2L, firstInstant.plusSeconds(25)))
+                .add(1L, new ListeningEvent(1L, 1L, 1L, 3L, firstInstant.plusSeconds(18)))
+                .add(1L, new ListeningEvent(1L, 2L, 10L, 10L, firstInstant.plusSeconds(30)))
+                .add(1L, new ListeningEvent(1L, 1L, 2L, 4L, firstInstant.plusSeconds(5)))
+                .add(1L, new ListeningEvent(1L, 2L, 10L, 25L, firstInstant.plusSeconds(12)))
+                .add(1L, new ListeningEvent(1L, 2L, 10L, 11L, firstInstant.plusSeconds(521)))
+                .add(1L, new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(235)))
+                .add(1L, new ListeningEvent(1L, 1L, 1L, 1L, firstInstant.plusSeconds(346)));
 
         final KeyValueStore<Long, UserProfile> profileStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);

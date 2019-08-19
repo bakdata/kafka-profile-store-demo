@@ -1,8 +1,8 @@
 package com.bakdata.profilestore.core.processor;
 
+import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.ProfilestoreMain;
 import com.bakdata.profilestore.core.TopologyBaseTest;
-import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -27,7 +27,7 @@ class FirstEventProcessorTest extends TopologyBaseTest {
                         firstInstant.plusSeconds(i))
         ).collect(Collectors.toList());
 
-        timestamps.forEach(event -> this.testTopology.input("listening-events").add(event));
+        timestamps.forEach(event -> this.testTopology.input("listening-events").add(event.getUserId(), event));
 
         final KeyValueStore<Long, UserProfile> profileStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
