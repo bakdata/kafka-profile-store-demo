@@ -9,7 +9,7 @@ import com.bakdata.profilestore.core.fields.ArtistHandler;
 import com.bakdata.profilestore.core.fields.FieldHandler;
 import com.bakdata.profilestore.core.fields.TrackHandler;
 import com.bakdata.profilestore.core.processor.ChartsProcessor;
-import com.bakdata.profilestore.core.processor.CheckProfileProcessor;
+import com.bakdata.profilestore.core.processor.ProfileChecker;
 import com.bakdata.profilestore.core.processor.EventCountProcessor;
 import com.bakdata.profilestore.core.processor.FirstEventProcessor;
 import com.bakdata.profilestore.core.processor.LastEventProcessor;
@@ -125,7 +125,6 @@ public class ProfilestoreMain implements Callable<Void> {
         chartTupleSerde.configure(serdeConfig, false);
 
         final StreamsBuilder builder = new StreamsBuilder();
-        final KStream<Long, ListeningEvent> keyedInputStream = builder.stream(this.topicName);
 
         builder.addStateStore(
                 Stores.keyValueStoreBuilder(
@@ -134,12 +133,15 @@ public class ProfilestoreMain implements Callable<Void> {
                         userProfileSerde)
         );
 
-        keyedInputStream.process(CheckProfileProcessor::new, PROFILE_STORE_NAME);
-        keyedInputStream.process(EventCountProcessor::new, PROFILE_STORE_NAME);
-        keyedInputStream.process(FirstEventProcessor::new, PROFILE_STORE_NAME);
-        keyedInputStream.process(LastEventProcessor::new, PROFILE_STORE_NAME);
+        final KStream<Long, ListeningEvent> inputStream = builder.stream(this.topicName);
+        final KStream<Long, ListeningEvent> checkedInputStream =
+                inputStream.transform(ProfileChecker::new, PROFILE_STORE_NAME);
 
-        this.addTopKProcessor(compositeKeySerde, chartTupleSerde, keyedInputStream);
+        checkedInputStream.process(EventCountProcessor::new, PROFILE_STORE_NAME);
+        checkedInputStream.process(FirstEventProcessor::new, PROFILE_STORE_NAME);
+        checkedInputStream.process(LastEventProcessor::new, PROFILE_STORE_NAME);
+
+        this.addTopKProcessor(compositeKeySerde, chartTupleSerde, checkedInputStream);
 
         return builder.build();
     }
