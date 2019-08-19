@@ -5,10 +5,15 @@ import com.bakdata.fluent_kafka_streams_tests.junit5.TestTopologyExtension;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import com.bakdata.profilestore.recommender.graph.KeyValueGraph;
+import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
+import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.Properties;
+import org.apache.kafka.common.serialization.Serdes.LongSerde;
+import org.apache.kafka.streams.StreamsConfig;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -18,7 +23,7 @@ class RecommenderProcessorTest {
 
     @RegisterExtension
     final TestTopologyExtension<String, ListeningEvent> testTopology =
-            new TestTopologyExtension<String, ListeningEvent>(this.main::buildTopology, this.main.getProperties());
+            new TestTopologyExtension<String, ListeningEvent>(this.main::buildTopology, this.getProperties());
 
 
     @Test
@@ -102,5 +107,14 @@ class RecommenderProcessorTest {
         return graphs;
     }
 
+    private Properties getProperties() {
+        final Properties props = new Properties();
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, "profile-topology-test");
+        props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, "dummy:1234");
+        props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, LongSerde.class);
+        props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, SpecificAvroSerde.class);
 
+        return props;
+    }
 }

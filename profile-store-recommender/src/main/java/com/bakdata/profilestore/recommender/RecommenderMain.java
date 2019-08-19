@@ -31,23 +31,23 @@ public class RecommenderMain implements Callable<Void> {
     public static final String RIGHT_INDEX_NAME = "rightIndex";
 
     @CommandLine.Option(names = "--application-id", required = true, description = "name of streams application")
-    private String applicationId = "music-recommender";
+    private String applicationId;
 
     @CommandLine.Option(names = "--host", required = true, description = "address of host machine")
-    private String host = "localhost";
+    private String host;
 
     @CommandLine.Option(names = "--port", defaultValue = "8080", description = "port of REST service")
-    private int port = 8080;
+    private int port;
 
     @CommandLine.Option(names = "--brokers", required = true, description = "address of kafka broker")
-    private String brokers = "localhost:29092";
+    private String brokers;
 
     @CommandLine.Option(names = "--schema-registry-url", required = true, description = "address of schema registry")
-    private String schemaRegistryUrl = "localhost:8081";
+    private String schemaRegistryUrl;
 
     @CommandLine.Option(names = "--topic", defaultValue = "listening-events",
             description = "name of topic with incoming interactions")
-    private String topicName = "listening-events";
+    private String topicName;
 
     public static void main(final String[] args) {
         System.exit(new CommandLine(new RecommenderMain()).execute(args));
