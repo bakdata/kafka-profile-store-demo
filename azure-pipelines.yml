@@ -9,13 +9,25 @@
 pool:
   vmImage: 'ubuntu-latest'
 
-steps:
-- task: Maven@3
-  inputs:
-    mavenPomFile: 'pom.xml'
-    mavenOptions: '-Xmx3072m'
-    javaHomeOption: 'JDKVersion'
-    jdkVersionOption: '1.11'
-    jdkArchitectureOption: 'x64'
-    publishJUnitResults: false
-    goals: 'clean package'
+stages:
+- stage: profile-store-core
+  - task: Maven@3
+    inputs:
+      mavenPomFile: 'profile-store-core/pom.xml'
+      mavenOptions: '-Xmx3072m'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.11'
+      jdkArchitectureOption: 'x64'
+      publishJUnitResults: false
+      goals: 'clean package'
+
+- stage: profile-store-recommender
+  - task: Maven@3
+    inputs:
+      mavenPomFile: 'profile-store-recommender/pom.xml'
+      mavenOptions: '-Xmx3072m'
+      javaHomeOption: 'JDKVersion'
+      jdkVersionOption: '1.11'
+      jdkArchitectureOption: 'x64'
+      publishJUnitResults: false
+      goals: 'clean package'
