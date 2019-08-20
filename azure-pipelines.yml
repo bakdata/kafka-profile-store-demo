@@ -7,12 +7,14 @@
 #- master
 
 jobs: 
-- job: profile_store_core
+- job: test
+  displayName: 'Profile Store Tests'
   pool:
     vmImage: 'ubuntu-latest'
 
   steps:
   - task: Maven@3
+    displayName: 'Profile Store Core Tests'
     inputs:
       mavenPomFile: 'profile-store-core/pom.xml'
       mavenOptions: '-Xmx3072m'
@@ -21,12 +23,8 @@ jobs:
       jdkArchitectureOption: 'x64'
       publishJUnitResults: false
       goals: 'clean package'
-
-- job: profile_store_recommender
-  pool:
-    vmImage: 'ubuntu-latest'
-  steps:
   - task: Maven@3
+    displayName: 'Profile Store Recommender Tests'
     inputs:
       mavenPomFile: 'profile-store-recommender/pom.xml'
       mavenOptions: '-Xmx3072m'
