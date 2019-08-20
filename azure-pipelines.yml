@@ -9,8 +9,10 @@
 pool:
   vmImage: 'ubuntu-latest'
 
-stages:
-- stage: profile-store-core
+
+jobs: 
+- job: profile_store_core
+  steps:
   - task: Maven@3
     inputs:
       mavenPomFile: 'profile-store-core/pom.xml'
@@ -21,7 +23,8 @@ stages:
       publishJUnitResults: false
       goals: 'clean package'
 
-- stage: profile-store-recommender
+- job: profile_store_recommender
+  steps:
   - task: Maven@3
     inputs:
       mavenPomFile: 'profile-store-recommender/pom.xml'
