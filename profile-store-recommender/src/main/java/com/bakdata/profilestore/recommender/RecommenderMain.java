@@ -56,7 +56,7 @@ public class RecommenderMain implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         final Properties properties = this.getProperties();
-        final Topology topology = this.buildTopology(properties);
+        final Topology topology = this.buildTopology(properties, this.topicName);
         final KafkaStreams streams = new KafkaStreams(topology, properties);
 
         streams.cleanUp();
@@ -118,7 +118,7 @@ public class RecommenderMain implements Callable<Void> {
      * @param properties the properties of the KafkaStreams application
      * @return the topology of the application
      */
-    public Topology buildTopology(final Properties properties) {
+    public Topology buildTopology(final Properties properties, final String inputTopic) {
         final Map<String, String> serdeConfig = Collections.singletonMap(
                 AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
                 properties.getProperty(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG));
@@ -126,7 +126,7 @@ public class RecommenderMain implements Callable<Void> {
         adjacencyListSerde.configure(serdeConfig, true);
 
         Topology topology = new Topology()
-                .addSource("interaction-source", this.topicName)
+                .addSource("interaction-source", inputTopic)
                 .addProcessor("interaction-processor", RecommenderProcessor::new, "interaction-source");
 
         for (final FieldType type : FieldType.values()) {

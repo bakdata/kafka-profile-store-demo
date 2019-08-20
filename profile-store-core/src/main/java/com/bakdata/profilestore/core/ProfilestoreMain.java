@@ -62,7 +62,7 @@ public class ProfilestoreMain implements Callable<Void> {
 
     @CommandLine.Option(names = "--topic", defaultValue = "listening-events",
             description = "name of topic with incoming interactions")
-    private String topicName;
+    private String topicName = "listening-events";
 
     public static void main(final String[] args) {
         System.exit(new CommandLine(new ProfilestoreMain()).execute(args));
@@ -71,7 +71,7 @@ public class ProfilestoreMain implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         final Properties properties = this.getProperties();
-        final Topology topology = this.buildTopology(properties);
+        final Topology topology = this.buildTopology(properties, this.topicName);
         log.debug(topology.describe().toString());
         final KafkaStreams streams = new KafkaStreams(topology, properties);
 
@@ -106,7 +106,7 @@ public class ProfilestoreMain implements Callable<Void> {
         return props;
     }
 
-    public Topology buildTopology(final Properties properties) {
+    public Topology buildTopology(final Properties properties, final String inputTopic) {
         final Map<String, String> serdeConfig = Collections.singletonMap(
                 AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
                 properties.getProperty(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG));
@@ -132,7 +132,7 @@ public class ProfilestoreMain implements Callable<Void> {
                         userProfileSerde)
         );
 
-        final KStream<Long, ListeningEvent> inputStream = builder.stream(this.topicName);
+        final KStream<Long, ListeningEvent> inputStream = builder.stream(inputTopic);
 
         inputStream.process(EventCountProcessor::new, PROFILE_STORE_NAME);
         inputStream.process(FirstEventProcessor::new, PROFILE_STORE_NAME);
@@ -159,8 +159,8 @@ public class ProfilestoreMain implements Callable<Void> {
                     .groupBy(CompositeKey::new, groupedSerde)
                     .count();
 
-            // create a stream of counts per user and field and repartition it so that the a count for userId is on
-            // the same partition as a event for a user.
+            // create a stream of counts per user and field and repartition it so that the count for userId is on
+            // the same partition as the event.
             // To trigger the repartition, it is necessary to call through()
 
             final KStream<Long, ChartRecord> countUpdateStream = fieldCountsPerUser

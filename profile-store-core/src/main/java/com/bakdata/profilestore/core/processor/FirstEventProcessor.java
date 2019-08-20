@@ -19,7 +19,7 @@ public class FirstEventProcessor implements Processor<Long, ListeningEvent> {
     @Override
     public void process(final Long userId, final ListeningEvent listeningEvent) {
         final UserProfile profile = DefaultUserProfile.getOrDefault(this.profileStore.get(userId));
-        if (profile.getFirstListeningEvent() == null
+        if (profile.getEventCount() == 0
                 || profile.getFirstListeningEvent().compareTo(listeningEvent.getTimestamp()) > 0) {
             profile.setFirstListeningEvent(listeningEvent.getTimestamp());
         }

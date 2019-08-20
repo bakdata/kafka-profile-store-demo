@@ -25,7 +25,7 @@ class EventCountProcessorTest extends TopologyBaseTest {
                         .setTimestamp(Instant.now())
                         .build())
                 .limit(50L)
-                .forEach(event -> this.testTopology.input("listening-events").add(event.getUserId(), event));
+                .forEach(event -> this.testTopology.input(INPUT_TOPIC).add(event.getUserId(), event));
 
         final KeyValueStore<Long, UserProfile> profileStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);

@@ -23,7 +23,8 @@ class RecommenderProcessorTest {
 
     @RegisterExtension
     final TestTopologyExtension<String, ListeningEvent> testTopology =
-            new TestTopologyExtension<String, ListeningEvent>(this.main::buildTopology, this.getProperties());
+            new TestTopologyExtension<String, ListeningEvent>(
+                    props -> this.main.buildTopology(props, "listening-events"), this.getProperties());
 
 
     @Test
