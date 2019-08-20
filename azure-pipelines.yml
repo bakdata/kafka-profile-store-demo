@@ -6,12 +6,11 @@
 #trigger:
 #- master
 
-pool:
-  vmImage: 'ubuntu-latest'
-
-
 jobs: 
 - job: profile_store_core
+  pool:
+    vmImage: 'ubuntu-latest'
+
   steps:
   - task: Maven@3
     inputs:
@@ -24,6 +23,8 @@ jobs:
       goals: 'clean package'
 
 - job: profile_store_recommender
+  pool:
+    vmImage: 'ubuntu-latest'
   steps:
   - task: Maven@3
     inputs:
