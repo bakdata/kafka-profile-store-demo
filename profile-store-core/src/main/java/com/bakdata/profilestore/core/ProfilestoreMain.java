@@ -1,8 +1,10 @@
 package com.bakdata.profilestore.core;
 
 import com.bakdata.profilestore.common.avro.ListeningEvent;
+import com.bakdata.profilestore.common.avro.Metadata;
 import com.bakdata.profilestore.core.avro.ChartRecord;
 import com.bakdata.profilestore.core.avro.CompositeKey;
+import com.bakdata.profilestore.core.avro.NamedChartRecord;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import com.bakdata.profilestore.core.fields.AlbumHandler;
 import com.bakdata.profilestore.core.fields.ArtistHandler;
@@ -23,16 +25,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serdes.LongSerde;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.KeyValue;
 import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
+import org.apache.kafka.streams.kstream.GlobalKTable;
 import org.apache.kafka.streams.kstream.Grouped;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KTable;
+import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.HostInfo;
+import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.Stores;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -42,6 +48,9 @@ import picocli.CommandLine.Command;
         description = "Start KafkaStreams application profile store")
 public class ProfilestoreMain implements Callable<Void> {
     public static final String PROFILE_STORE_NAME = "profile-store";
+    public static final String ARTIST_STORE_NAME = "artist_store";
+    public static final String ALBUM_STORE_NAME = "album_store";
+    public static final String TRACK_STORE_NAME = "track_store";
     public static final String COUNT_TOPIC_PREFIX = "profiler-event-count-";
     public static final int TOP_K = 10;
 
@@ -60,9 +69,22 @@ public class ProfilestoreMain implements Callable<Void> {
     @CommandLine.Option(names = "--schema-registry-url", required = true, description = "address of schema registry")
     private String schemaRegistryUrl;
 
-    @CommandLine.Option(names = "--topic", defaultValue = "listening-events",
+    @CommandLine.Option(names = "--listening-events-topic", defaultValue = "listening-events",
             description = "name of topic with incoming interactions")
-    private String topicName = "listening-events";
+    private String listeningEventTopicName = "listening-events";
+
+    @CommandLine.Option(names = "--artist-topic", defaultValue = "artists",
+            description = "name of topic with incoming artists")
+    private String artistTopicName = "artists";
+
+    @CommandLine.Option(names = "--album-topic", defaultValue = "albums",
+            description = "name of topic with incoming albums")
+    private String albumTopicName = "albums";
+
+    @CommandLine.Option(names = "--track-topic", defaultValue = "tracks",
+            description = "name of topic with incoming tracks")
+    private String trackTopicName = "tracks";
+
 
     public static void main(final String[] args) {
         System.exit(new CommandLine(new ProfilestoreMain()).execute(args));
@@ -71,7 +93,7 @@ public class ProfilestoreMain implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         final Properties properties = this.getProperties();
-        final Topology topology = this.buildTopology(properties, this.topicName);
+        final Topology topology = this.buildTopology(properties, this.listeningEventTopicName);
         log.debug(topology.describe().toString());
         final KafkaStreams streams = new KafkaStreams(topology, properties);
 
@@ -123,7 +145,17 @@ public class ProfilestoreMain implements Callable<Void> {
         final SpecificAvroSerde<ChartRecord> chartRecordSerde = new SpecificAvroSerde<>();
         chartRecordSerde.configure(serdeConfig, false);
 
+        final SpecificAvroSerde<Metadata> metadataSerde = new SpecificAvroSerde<>();
+        metadataSerde.configure(serdeConfig, false);
+
         final StreamsBuilder builder = new StreamsBuilder();
+
+        final GlobalKTable<Long, Metadata> artistTable =
+                createGlobalTable(this.artistTopicName, ARTIST_STORE_NAME, builder, metadataSerde);
+        final GlobalKTable<Long, Metadata> albumTable =
+                createGlobalTable(this.albumTopicName, ALBUM_STORE_NAME, builder, metadataSerde);
+        final GlobalKTable<Long, Metadata> trackTable =
+                createGlobalTable(this.trackTopicName, TRACK_STORE_NAME, builder, metadataSerde);
 
         builder.addStateStore(
                 Stores.keyValueStoreBuilder(
@@ -138,21 +170,35 @@ public class ProfilestoreMain implements Callable<Void> {
         inputStream.process(FirstEventProcessor::new, PROFILE_STORE_NAME);
         inputStream.process(LastEventProcessor::new, PROFILE_STORE_NAME);
 
-        this.addTopKProcessor(compositeKeySerde, chartRecordSerde, inputStream);
+        this.addTopKProcessor(compositeKeySerde, chartRecordSerde, inputStream, trackTable, albumTable, artistTable);
 
         return builder.build();
     }
 
+    private GlobalKTable<Long, Metadata> createGlobalTable(final String topicName, final String storeName, final StreamsBuilder builder, final SpecificAvroSerde<Metadata> metadataSerde) {
+        return builder.globalTable(topicName,
+                Materialized.<Long, Metadata, KeyValueStore<Bytes, byte[]>>as(storeName)
+                        .withKeySerde(Serdes.Long())
+                        .withValueSerde(metadataSerde));
+
+    }
+
     private void addTopKProcessor(final SpecificAvroSerde<CompositeKey> compositeKeySerde,
             final SpecificAvroSerde<ChartRecord> chartRecordSerde,
-            final KStream<Long, ListeningEvent> inputStream) {
+            final KStream<Long, ListeningEvent> inputStream,
+            final GlobalKTable<Long, Metadata> trackTable,
+            final GlobalKTable<Long, Metadata> albumTable,
+            final GlobalKTable<Long, Metadata> artistTable) {
 
         final Serde<Long> longSerde = Serdes.Long();
         final Grouped<CompositeKey, Long> groupedSerde = Grouped.with(compositeKeySerde, longSerde);
         final Produced<Long, ChartRecord> producedSerde = Produced.with(longSerde, chartRecordSerde);
 
         final FieldHandler[] fieldHandlers = {new AlbumHandler(), new ArtistHandler(), new TrackHandler()};
-        for (final FieldHandler fieldHandler : fieldHandlers) {
+        final GlobalKTable<Long, Metadata>[] metadataTables = new GlobalKTable[] {albumTable, artistTable, trackTable};
+        for (int i = 0; i < fieldHandlers.length; i++) {
+            FieldHandler fieldHandler = fieldHandlers[i];
+            GlobalKTable<Long, Metadata> metadataTable = metadataTables[i];
 
             final KTable<CompositeKey, Long> fieldCountsPerUser = inputStream
                     .map((key, event) -> KeyValue.pair(key, fieldHandler.extractId(event)))
@@ -172,7 +218,12 @@ public class ProfilestoreMain implements Callable<Void> {
                             ))
                     .through(COUNT_TOPIC_PREFIX + fieldHandler.type().toString().toLowerCase(), producedSerde);
 
-            countUpdateStream.process(() -> new ChartsProcessor(TOP_K, fieldHandler), PROFILE_STORE_NAME);
+            KStream<Long, NamedChartRecord> namedCountUpdateStream = countUpdateStream
+                    .join(metadataTable, (userId, chartRecord) -> chartRecord.getId(),
+                            (chartRecord, metadata) -> new NamedChartRecord(chartRecord.getId(), metadata.getName(),
+                                    chartRecord.getCountPlays()));
+
+            namedCountUpdateStream.process(() -> new ChartsProcessor(TOP_K, fieldHandler), PROFILE_STORE_NAME);
         }
     }
 

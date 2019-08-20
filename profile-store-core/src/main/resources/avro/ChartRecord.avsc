@@ -1,0 +1,15 @@
+{
+  "namespace": "com.bakdata.profilestore.core.avro",
+  "name": "ChartRecord",
+  "type": "record",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "countPlays",
+      "type": "long"
+    }
+  ]
+}
