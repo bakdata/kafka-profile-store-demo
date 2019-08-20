@@ -1,0 +1,15 @@
+{
+  "namespace": "com.bakdata.profilestore.common.avro",
+  "type": "record",
+  "name": "Metadata",
+  "fields": [
+    {
+      "name": "id",
+      "type": "long"
+    },
+    {
+      "name": "name",
+      "type": "string"
+    }
+  ]
+}
