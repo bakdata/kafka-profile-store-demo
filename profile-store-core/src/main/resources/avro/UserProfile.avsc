@@ -1,12 +1,16 @@
 [
   {
     "namespace": "com.bakdata.profilestore.core.avro",
-    "name": "ChartRecord",
+    "name": "NamedChartRecord",
     "type": "record",
     "fields": [
       {
         "name": "id",
         "type": "long"
+      },
+      {
+        "name": "name",
+        "type": "string"
       },
       {
         "name": "countPlays",
@@ -41,21 +45,21 @@
         "name": "topTenArtist",
         "type": {
           "type": "array",
-          "items": "com.bakdata.profilestore.core.avro.ChartRecord"
+          "items": "com.bakdata.profilestore.core.avro.NamedChartRecord"
         }
       },
       {
         "name": "topTenAlbums",
         "type": {
           "type": "array",
-          "items": "com.bakdata.profilestore.core.avro.ChartRecord"
+          "items": "com.bakdata.profilestore.core.avro.NamedChartRecord"
         }
       },
       {
         "name": "topTenTracks",
         "type": {
           "type": "array",
-          "items": "com.bakdata.profilestore.core.avro.ChartRecord"
+          "items": "com.bakdata.profilestore.core.avro.NamedChartRecord"
         }
       }
     ]

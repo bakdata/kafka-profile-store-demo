@@ -2,7 +2,7 @@ package com.bakdata.profilestore.core.processor;
 
 import com.bakdata.profilestore.common.avro.ListeningEvent;
 import com.bakdata.profilestore.core.ListeningEventBuilder;
-import com.bakdata.profilestore.core.ProfilestoreMain;
+import com.bakdata.profilestore.core.ProfileStoreMain;
 import com.bakdata.profilestore.core.TopologyBaseTest;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
@@ -37,7 +37,7 @@ class LastEventProcessorTest extends TopologyBaseTest {
         timestamps.forEach(event -> this.testTopology.input(INPUT_TOPIC).add(event.getUserId(), event));
 
         final KeyValueStore<Long, UserProfile> profileStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfileStoreMain.PROFILE_STORE_NAME);
 
         Assertions.assertEquals(firstInstant.plusSeconds(19), profileStore.get(1L).getLastListeningEvent());
     }
@@ -58,7 +58,7 @@ class LastEventProcessorTest extends TopologyBaseTest {
                 .add(1L, builder.setTimestamp(firstInstant).build())
                 .add(1L, builder.setTimestamp(firstInstant.plusSeconds(35)).build());
         final KeyValueStore<Long, UserProfile> profileStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfileStoreMain.PROFILE_STORE_NAME);
 
         Assertions.assertEquals(firstInstant.plusSeconds(35), profileStore.get(1L).getLastListeningEvent());
     }

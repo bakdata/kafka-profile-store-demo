@@ -17,8 +17,8 @@ public class UserProfileTest extends TopologyBaseTest {
     void testSingleUser() {
         final Instant firstInstant = java.time.Instant.now().truncatedTo(ChronoUnit.MILLIS);
         final ListeningEventBuilder builder = new ListeningEventBuilder();
-        builder.setUserId(1L);
 
+        builder.setUserId(1L);
         this.testTopology.input(INPUT_TOPIC)
                 .add(1L, builder.setArtistId(1L).setAlbumId(1L)
                         .setTrackId(1L).setTimestamp(firstInstant.plusSeconds(20)).build())
@@ -40,26 +40,27 @@ public class UserProfileTest extends TopologyBaseTest {
                         .setTrackId(1L).setTimestamp(firstInstant.plusSeconds(346)).build());
 
         final KeyValueStore<Long, UserProfile> profileStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfileStoreMain.PROFILE_STORE_NAME);
         final UserProfile userProfile = profileStore.get(1L);
 
         Assertions.assertEquals(firstInstant.plusSeconds(5), userProfile.getFirstListeningEvent());
         Assertions.assertEquals(firstInstant.plusSeconds(346), userProfile.getLastListeningEvent());
 
-        MatcherAssert.assertThat(userProfile.getTopTenAlbums(),
+        MatcherAssert.assertThat(namedToUnnamedRecord(userProfile.getTopTenAlbums()),
                 IsIterableContainingInOrder
                         .contains(new ChartRecord(1L, 5L),
                                 new ChartRecord(10L, 3L),
                                 new ChartRecord(2L, 1L)));
 
-        MatcherAssert.assertThat(userProfile.getTopTenArtist(),
+        MatcherAssert.assertThat(namedToUnnamedRecord(userProfile.getTopTenArtist()),
                 IsIterableContainingInOrder
                         .contains(new ChartRecord(1L, 6L),
                                 new ChartRecord(2L, 3L)));
 
-        Assertions.assertEquals(new ChartRecord(1L, 3L), userProfile.getTopTenTracks().get(0));
+        Assertions.assertEquals(new ChartRecord(1L, 3L), namedToUnnamedRecord(userProfile.getTopTenTracks()).get(0));
 
-        MatcherAssert.assertThat(userProfile.getTopTenTracks().subList(1, userProfile.getTopTenTracks().size()),
+        MatcherAssert.assertThat(
+                namedToUnnamedRecord(userProfile.getTopTenTracks().subList(1, userProfile.getTopTenTracks().size())),
                 IsIterableContainingInAnyOrder.containsInAnyOrder(
                         new ChartRecord(2L, 1L),
                         new ChartRecord(3L, 1L),
@@ -68,6 +69,5 @@ public class UserProfileTest extends TopologyBaseTest {
                         new ChartRecord(25L, 1L),
                         new ChartRecord(11L, 1L)
                 ));
-
     }
 }

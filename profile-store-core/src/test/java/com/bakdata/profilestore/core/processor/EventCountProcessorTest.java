@@ -1,7 +1,7 @@
 package com.bakdata.profilestore.core.processor;
 
 import com.bakdata.profilestore.core.ListeningEventBuilder;
-import com.bakdata.profilestore.core.ProfilestoreMain;
+import com.bakdata.profilestore.core.ProfileStoreMain;
 import com.bakdata.profilestore.core.TopologyBaseTest;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
@@ -28,7 +28,7 @@ class EventCountProcessorTest extends TopologyBaseTest {
                 .forEach(event -> this.testTopology.input(INPUT_TOPIC).add(event.getUserId(), event));
 
         final KeyValueStore<Long, UserProfile> profileStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfileStoreMain.PROFILE_STORE_NAME);
 
         Assertions.assertEquals(50L, profileStore.get(1L).getEventCount());
     }

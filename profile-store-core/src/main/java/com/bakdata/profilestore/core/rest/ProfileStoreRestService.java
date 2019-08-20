@@ -13,13 +13,13 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 @Slf4j
-public class ProfilestoreRestService {
+public class ProfileStoreRestService {
     private final HostInfo hostInfo;
     private final UserProfileResource profileResource;
     private final ApplicationResource applicationResource;
     private Server server;
 
-    public ProfilestoreRestService(final HostInfo hostInfo, final KafkaStreams streams) {
+    public ProfileStoreRestService(final HostInfo hostInfo, final KafkaStreams streams) {
         this.hostInfo = hostInfo;
         this.profileResource = new UserProfileResource(streams, hostInfo);
         this.applicationResource = new ApplicationResource(streams);
