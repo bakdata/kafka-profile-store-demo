@@ -22,7 +22,7 @@ jobs:
       jdkVersionOption: '1.11'
       jdkArchitectureOption: 'x64'
       publishJUnitResults: false
-      goals: 'clean package'
+      goals: 'package'
   - task: Maven@3
     displayName: 'Profile Store Recommender Tests'
     inputs:
@@ -32,4 +32,4 @@ jobs:
       jdkVersionOption: '1.11'
       jdkArchitectureOption: 'x64'
       publishJUnitResults: false
-      goals: 'clean package'
+      goals: 'package'
