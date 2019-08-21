@@ -43,7 +43,7 @@ public class ChartsProcessor implements Processor<Long, ChartRecord> {
 
     private List<ChartRecord> updateCharts(final List<ChartRecord> charts, final ChartRecord newRecord) {
         return Seq.concat(charts.stream(), Stream.of(newRecord))
-                // remove chart records with the same id
+                // if there are two records with the same id, remove the one with the smaller count
                 .grouped(ChartRecord::getId)
                 .map(tuple -> tuple.v2().max(Comparator.comparingLong(ChartRecord::getCountPlays)).get())
                 .sorted(Comparator.comparingLong(ChartRecord::getCountPlays).reversed())

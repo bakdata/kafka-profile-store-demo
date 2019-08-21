@@ -62,7 +62,7 @@ public class ProfilestoreMain implements Callable<Void> {
 
     @CommandLine.Option(names = "--topic", defaultValue = "listening-events",
             description = "name of topic with incoming interactions")
-    private String topicName = "listening-events";
+    private String topicName;
 
     public static void main(final String[] args) {
         System.exit(new CommandLine(new ProfilestoreMain()).execute(args));
