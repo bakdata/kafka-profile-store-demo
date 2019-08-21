@@ -16,13 +16,13 @@ import org.glassfish.jersey.servlet.ServletContainer;
 public class ProfilestoreRestService {
     private final HostInfo hostInfo;
     private final UserProfileResource profileResource;
-    private final ProcessorsResource processorsResource;
+    private final ApplicationResource applicationResource;
     private Server server;
 
     public ProfilestoreRestService(final HostInfo hostInfo, final KafkaStreams streams) {
         this.hostInfo = hostInfo;
         this.profileResource = new UserProfileResource(streams, hostInfo);
-        this.processorsResource = new ProcessorsResource(streams);
+        this.applicationResource = new ApplicationResource(streams);
     }
 
     public void start() throws Exception {
@@ -35,7 +35,7 @@ public class ProfilestoreRestService {
         final ResourceConfig config = new ResourceConfig();
         config.register(JacksonFeature.class);
         config.register(this.profileResource);
-        config.register(this.processorsResource);
+        config.register(this.applicationResource);
 
         final ServletContainer container = new ServletContainer(config);
         final ServletHolder holder = new ServletHolder(container);
