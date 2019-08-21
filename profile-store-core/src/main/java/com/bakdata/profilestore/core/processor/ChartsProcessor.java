@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.processor.Processor;
 import org.apache.kafka.streams.processor.ProcessorContext;
 import org.apache.kafka.streams.state.KeyValueStore;
+import org.jooq.lambda.Seq;
 
 @Slf4j
 public class ChartsProcessor implements Processor<Long, ChartRecord> {
@@ -41,9 +42,11 @@ public class ChartsProcessor implements Processor<Long, ChartRecord> {
     }
 
     private List<ChartRecord> updateCharts(final List<ChartRecord> charts, final ChartRecord newRecord) {
-        return Stream
-                .concat(charts.stream(), Stream.of(newRecord))
-                .sorted(Comparator.comparing(ChartRecord::getCountPlays))
+        return Seq.concat(charts.stream(), Stream.of(newRecord))
+                // if there are two records with the same id, remove the one with the smaller count
+                .grouped(ChartRecord::getId)
+                .map(tuple -> tuple.v2().max(Comparator.comparingLong(ChartRecord::getCountPlays)).get())
+                .sorted(Comparator.comparingLong(ChartRecord::getCountPlays).reversed())
                 .limit(this.chartSize)
                 .collect(Collectors.toList());
     }

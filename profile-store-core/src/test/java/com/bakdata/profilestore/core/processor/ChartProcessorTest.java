@@ -18,7 +18,7 @@ class ChartProcessorTest extends TopologyBaseTest {
         builder.setTimestamp(Instant.now())
                 .setArtistId(2L);
 
-        this.testTopology.input("listening-events")
+        this.testTopology.input(INPUT_TOPIC)
                 .add(1L, builder.setUserId(1L).setAlbumId(3L).setTrackId(4L).build())
                 .add(1L, builder.setUserId(1L).setAlbumId(3L).setTrackId(5L).build())
                 .add(1L, builder.setUserId(1L).setAlbumId(2L).setTrackId(4L).build())
@@ -45,7 +45,7 @@ class ChartProcessorTest extends TopologyBaseTest {
         builder.setTimestamp(Instant.now())
                 .setUserId(1L);
 
-        this.testTopology.input("listening-events")
+        this.testTopology.input(INPUT_TOPIC)
                 .add(1L, builder.setArtistId(2L).setAlbumId(3L).setTrackId(4L).build())
                 .add(1L, builder.setArtistId(2L).setAlbumId(3L).setTrackId(5L).build())
                 .add(1L, builder.setArtistId(2L).setAlbumId(3L).setTrackId(4L).build())
@@ -76,7 +76,7 @@ class ChartProcessorTest extends TopologyBaseTest {
                 .setAlbumId(3L)
                 .setTimestamp(Instant.now());
 
-        this.testTopology.input("listening-events")
+        this.testTopology.input(INPUT_TOPIC)
                 .add(1L, builder.setTrackId(4L).build())
                 .add(1L, builder.setTrackId(5L).build())
                 .add(1L, builder.setTrackId(4L).build())

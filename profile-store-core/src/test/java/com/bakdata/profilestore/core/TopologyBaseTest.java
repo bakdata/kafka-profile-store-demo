@@ -11,11 +11,12 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 public abstract class TopologyBaseTest {
+    public static final String INPUT_TOPIC = "listening-events";
     private final ProfilestoreMain main = new ProfilestoreMain();
 
     @RegisterExtension
     protected final TestTopologyExtension<Long, ListeningEvent> testTopology =
-            new TestTopologyExtension<>(this.main::buildTopology, this.getProperties());
+            new TestTopologyExtension<>(props -> this.main.buildTopology(props, INPUT_TOPIC), this.getProperties());
 
     private Properties getProperties() {
         final Properties props = new Properties();
