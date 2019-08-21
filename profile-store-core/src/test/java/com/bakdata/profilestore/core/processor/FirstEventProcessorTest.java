@@ -35,7 +35,7 @@ class FirstEventProcessorTest extends TopologyBaseTest {
                                 .build())
                 .collect(Collectors.toList());
 
-        timestamps.forEach(event -> this.testTopology.input("listening-events").add(event.getUserId(), event));
+        timestamps.forEach(event -> this.testTopology.input(INPUT_TOPIC).add(event.getUserId(), event));
 
         final KeyValueStore<Long, UserProfile> profileStore =
                 this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
@@ -51,7 +51,7 @@ class FirstEventProcessorTest extends TopologyBaseTest {
         final ListeningEventBuilder builder = new ListeningEventBuilder();
         builder.setUserId(1L).setArtistId(2L).setAlbumId(3L).setTrackId(4L);
 
-        this.testTopology.input("listening-events")
+        this.testTopology.input(INPUT_TOPIC)
                 .add(1L, builder.setTimestamp(firstInstant.plusSeconds(20)).build())
                 .add(1L, builder.setTimestamp(firstInstant.plusSeconds(25)).build())
                 .add(1L, builder.setTimestamp(firstInstant.plusSeconds(18)).build())

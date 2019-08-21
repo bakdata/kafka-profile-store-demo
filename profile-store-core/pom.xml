@@ -144,6 +144,13 @@
             <version>4.0.1</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.jooq</groupId>
+            <artifactId>jool</artifactId>
+            <version>0.9.13</version>
+        </dependency>
+
+
         <!-- Test -->
         <dependency>
             <groupId>com.bakdata.fluent-kafka-streams-tests</groupId>

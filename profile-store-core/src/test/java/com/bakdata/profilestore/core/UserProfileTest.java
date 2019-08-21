@@ -19,7 +19,7 @@ public class UserProfileTest extends TopologyBaseTest {
         final ListeningEventBuilder builder = new ListeningEventBuilder();
         builder.setUserId(1L);
 
-        this.testTopology.input("listening-events")
+        this.testTopology.input(INPUT_TOPIC)
                 .add(1L, builder.setArtistId(1L).setAlbumId(1L)
                         .setTrackId(1L).setTimestamp(firstInstant.plusSeconds(20)).build())
                 .add(1L, builder.setArtistId(1L).setAlbumId(1L)
@@ -44,7 +44,7 @@ public class UserProfileTest extends TopologyBaseTest {
         final UserProfile userProfile = profileStore.get(1L);
 
         Assertions.assertEquals(firstInstant.plusSeconds(5), userProfile.getFirstListeningEvent());
-        Assertions.assertEquals(firstInstant.plusSeconds(521), userProfile.getLastListeningEvent());
+        Assertions.assertEquals(firstInstant.plusSeconds(346), userProfile.getLastListeningEvent());
 
         MatcherAssert.assertThat(userProfile.getTopTenAlbums(),
                 IsIterableContainingInOrder
