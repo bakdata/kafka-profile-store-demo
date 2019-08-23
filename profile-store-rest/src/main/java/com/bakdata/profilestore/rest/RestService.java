@@ -61,7 +61,7 @@ public class RestService {
     public void join() {
         try {
             this.server.join();
-        } catch (InterruptedException e) {
+        } catch (final InterruptedException e) {
             log.error("Server could not join thread", e);
         }
     }
