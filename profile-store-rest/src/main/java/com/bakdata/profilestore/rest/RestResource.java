@@ -14,6 +14,7 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.state.HostInfo;
@@ -44,7 +45,7 @@ public class RestResource {
     @GET
     @Path("/profile/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getUserProfile(@PathParam("userId") final long userId, @Context final UriInfo uriInfo) {
+    public Response getUserProfile(@PathParam("userId") final long userId, @Context final UriInfo uriInfo) {
         if (this.partitionToHostMap.isEmpty() || (System.currentTimeMillis() - this.lastUpdate) > TIMEOUT) {
             log.info("Update current profile store hosts");
             this.partitionToHostMap =
@@ -66,13 +67,13 @@ public class RestResource {
         log.info("Forward request to {}", url);
         return this.client.target(url)
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(String.class);
+                .get();
     }
 
     @GET
     @Path("/recommendation/{userId}/{type}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Long> getRecommendationsForUser(
+    public Response getRecommendationsForUser(
             @PathParam("userId") final long userId,
             @PathParam("type") final String type,
             @Context final UriInfo uriInfo,
@@ -86,7 +87,7 @@ public class RestResource {
         log.info("Forward request to {}", url);
         return this.client.target(url)
                 .request(MediaType.APPLICATION_JSON_TYPE)
-                .get(new GenericType<List<Long>>() {});
+                .get();
     }
 
     private static String getAddress(final HostInfo address) {

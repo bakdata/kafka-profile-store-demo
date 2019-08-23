@@ -1,0 +1,71 @@
+{
+  "eventCount": 6,
+  "firstListeningEvent": "2019-08-19T14: 18: 35.907Z",
+  "lastListeningEvent": "2019-08-21T12: 22: 55.170Z",
+  "topTenArtist": [
+    {
+      "id": 23,
+      "countPlays": 1
+    },
+    {
+      "id": 46,
+      "countPlays": 1
+    },
+    {
+      "id": 100,
+      "countPlays": 1
+    },
+    {
+      "id": 40,
+      "countPlays": 1
+    },
+    {
+      "id": 563,
+      "countPlays": 1
+    }
+  ],
+  "topTenAlbums": [
+    {
+      "id": 77,
+      "countPlays": 1
+    },
+    {
+      "id": 109,
+      "countPlays": 1
+    },
+    {
+      "id": 128,
+      "countPlays": 1
+    },
+    {
+      "id": 404,
+      "countPlays": 1
+    },
+    {
+      "id": 64,
+      "countPlays": 1
+    }
+  ],
+  "topTenTracks": [
+    {
+      "id": 962,
+      "countPlays": 1
+    },
+    {
+      "id": 544,
+      "countPlays": 1
+    },
+    {
+      "id": 764,
+      "countPlays": 1
+    },
+    {
+      "id": 94,
+      "countPlays": 1
+    },
+    {
+      "id": 546,
+      "countPlays": 1
+    }
+  ]
+}

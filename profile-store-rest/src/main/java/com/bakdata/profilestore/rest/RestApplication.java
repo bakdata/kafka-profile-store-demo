@@ -35,7 +35,7 @@ public class RestApplication implements Callable<Void> {
         final RestService restService =
                 new RestService(restHost, new RestResource(profileStoreInfo, recommenderHostInfo));
         restService.start();
-        log.info("REST Server started");
+        restService.join();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {

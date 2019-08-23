@@ -1,6 +1,7 @@
 package com.bakdata.profilestore.rest;
 
 import java.net.SocketException;
+import java.net.URI;
 import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.state.HostInfo;
@@ -40,7 +41,10 @@ public class RestService {
 
         final ServerConnector connector = new ServerConnector(this.server);
         connector.setHost(this.hostInfo.host());
-        connector.setPort(this.hostInfo.port());
+        // if port is 0, the connector will automatically find a free port
+        if (this.hostInfo.port() != 0) {
+            connector.setPort(this.hostInfo.port());
+        }
         this.server.addConnector(connector);
 
         contextHandler.start();
@@ -48,10 +52,17 @@ public class RestService {
 
         try {
             this.server.start();
-            this.server.join();
         } catch (final SocketException exception) {
             log.error("Unavailable: {} : {}", this.hostInfo.host(), this.hostInfo.port());
             throw new Exception(exception.toString());
+        }
+    }
+
+    public void join() {
+        try {
+            this.server.join();
+        } catch (InterruptedException e) {
+            log.error("Server could not join thread", e);
         }
     }
 
@@ -60,5 +71,9 @@ public class RestService {
             this.server.stop();
             log.info("Server stopped");
         }
+    }
+
+    public URI getHost() {
+        return this.server.getURI();
     }
 }
