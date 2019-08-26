@@ -25,15 +25,15 @@ public class RestResource {
     private static final String ALL_HOSTS_PATH = "applications/all";
     private static final long TIMEOUT = 50_000;
 
-    private final HostInfo coreHost;
+    private final HostInfo profileHost;
     private final HostInfo recommenderHost;
     private final Client client;
 
     private Map<Integer, String> partitionToHostMap;
     private long lastUpdate = 0L;
 
-    public RestResource(final HostInfo coreHost, final HostInfo recommenderHost) {
-        this.coreHost = coreHost;
+    public RestResource(final HostInfo profileHost, final HostInfo recommenderHost) {
+        this.profileHost = profileHost;
         this.recommenderHost = recommenderHost;
         this.partitionToHostMap = new HashMap<>();
         this.client = ClientBuilder.newBuilder().register(JacksonFeature.class).build();
@@ -46,8 +46,8 @@ public class RestResource {
         if (this.partitionToHostMap.isEmpty() || (System.currentTimeMillis() - this.lastUpdate) > TIMEOUT) {
             log.debug("Update current profile store hosts");
             this.partitionToHostMap =
-                    this.client.target(getURL(this.coreHost, ALL_HOSTS_PATH))
-                            .request(MediaType.APPLICATION_JSON_TYPE)
+                    this.client.target(getURL(this.profileHost, ALL_HOSTS_PATH))
+                            .request(MediaType.APPLICATION_JSON)
                             // removing explicit type leads to compiler bug
                             .get(new GenericType<Map<Integer, String>>() {});
             log.debug("Current hosts are: {}", this.partitionToHostMap);
@@ -58,12 +58,12 @@ public class RestResource {
         // Calculating a wrong partition because of changes in the meantime is not a problem
         // because the target host can forward the request to the correct host
         final int partition = UserPartitioner.calculatePartition(userId, this.partitionToHostMap.size());
-        final String targetHost = this.partitionToHostMap.getOrDefault(partition, getAddress(this.coreHost));
+        final String targetHost = this.partitionToHostMap.getOrDefault(partition, getAddress(this.profileHost));
 
         final String url = getURL(targetHost, uriInfo.getPath());
         log.debug("Forward request to {}", url);
         return this.client.target(url)
-                .request(MediaType.APPLICATION_JSON_TYPE)
+                .request(MediaType.APPLICATION_JSON)
                 .get();
     }
 
@@ -83,7 +83,7 @@ public class RestResource {
         final String url = getURL(this.recommenderHost, uriInfo.getPath());
         log.debug("Forward request to {}", url);
         return this.client.target(url)
-                .request(MediaType.APPLICATION_JSON_TYPE)
+                .request(MediaType.APPLICATION_JSON)
                 .get();
     }
 
