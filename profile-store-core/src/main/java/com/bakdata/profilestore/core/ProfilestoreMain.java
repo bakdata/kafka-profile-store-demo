@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serde;
 import org.apache.kafka.common.serialization.Serdes;
@@ -73,14 +74,17 @@ public class ProfilestoreMain implements Callable<Void> {
             description = "name of topic with incoming interactions")
     private String listeningEventTopicName = "listening-events";
 
+    @Getter
     @CommandLine.Option(names = "--artist-topic", defaultValue = "artists",
             description = "name of topic with incoming artists")
     private String artistTopicName = "artists";
 
+    @Getter
     @CommandLine.Option(names = "--album-topic", defaultValue = "albums",
             description = "name of topic with incoming albums")
     private String albumTopicName = "albums";
 
+    @Getter
     @CommandLine.Option(names = "--track-topic", defaultValue = "tracks",
             description = "name of topic with incoming tracks")
     private String trackTopicName = "tracks";
@@ -175,7 +179,8 @@ public class ProfilestoreMain implements Callable<Void> {
         return builder.build();
     }
 
-    private GlobalKTable<Long, Metadata> createGlobalTable(final String topicName, final String storeName, final StreamsBuilder builder, final SpecificAvroSerde<Metadata> metadataSerde) {
+    private GlobalKTable<Long, Metadata> createGlobalTable(final String topicName, final String storeName,
+            final StreamsBuilder builder, final SpecificAvroSerde<Metadata> metadataSerde) {
         return builder.globalTable(topicName,
                 Materialized.<Long, Metadata, KeyValueStore<Bytes, byte[]>>as(storeName)
                         .withKeySerde(Serdes.Long())
@@ -195,7 +200,7 @@ public class ProfilestoreMain implements Callable<Void> {
         final Produced<Long, ChartRecord> producedSerde = Produced.with(longSerde, chartRecordSerde);
 
         final FieldHandler[] fieldHandlers = {new AlbumHandler(), new ArtistHandler(), new TrackHandler()};
-        final GlobalKTable<Long, Metadata>[] metadataTables = new GlobalKTable[] {albumTable, artistTable, trackTable};
+        final GlobalKTable<Long, Metadata>[] metadataTables = new GlobalKTable[]{albumTable, artistTable, trackTable};
         for (int i = 0; i < fieldHandlers.length; i++) {
             FieldHandler fieldHandler = fieldHandlers[i];
             GlobalKTable<Long, Metadata> metadataTable = metadataTables[i];
