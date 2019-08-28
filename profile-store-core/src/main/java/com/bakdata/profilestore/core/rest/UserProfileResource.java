@@ -1,7 +1,7 @@
 package com.bakdata.profilestore.core.rest;
 
 
-import com.bakdata.profilestore.core.ProfilestoreMain;
+import com.bakdata.profilestore.core.ProfileStoreMain;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import javax.ws.rs.GET;
 import javax.ws.rs.NotFoundException;
@@ -42,7 +42,7 @@ public class UserProfileResource {
     public String getUserProfile(@PathParam("userId") final long userId, @Context final UriInfo uriInfo) {
         log.info("Request for user {}", userId);
         final StreamsMetadata metadata =
-                this.streams.metadataForKey(ProfilestoreMain.PROFILE_STORE_NAME, userId, Serdes.Long().serializer());
+                this.streams.metadataForKey(ProfileStoreMain.PROFILE_STORE_NAME, userId, Serdes.Long().serializer());
 
         if (metadata == null) {
             throw new NotFoundException();
@@ -53,7 +53,7 @@ public class UserProfileResource {
         }
 
         final ReadOnlyKeyValueStore<Long, UserProfile> store =
-                this.streams.store(ProfilestoreMain.PROFILE_STORE_NAME, QueryableStoreTypes.keyValueStore());
+                this.streams.store(ProfileStoreMain.PROFILE_STORE_NAME, QueryableStoreTypes.keyValueStore());
         if (store == null) {
             throw new NotFoundException();
         }

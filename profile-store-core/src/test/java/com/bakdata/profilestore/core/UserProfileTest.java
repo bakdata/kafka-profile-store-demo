@@ -40,7 +40,7 @@ public class UserProfileTest extends TopologyBaseTest {
                         .setTrackId(1L).setTimestamp(firstInstant.plusSeconds(346)).build());
 
         final KeyValueStore<Long, UserProfile> profileStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfileStoreMain.PROFILE_STORE_NAME);
         final UserProfile userProfile = profileStore.get(1L);
 
         Assertions.assertEquals(firstInstant.plusSeconds(5), userProfile.getFirstListeningEvent());

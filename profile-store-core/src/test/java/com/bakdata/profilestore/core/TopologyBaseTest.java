@@ -2,8 +2,8 @@ package com.bakdata.profilestore.core;
 
 import com.bakdata.fluent_kafka_streams_tests.TestInput;
 import com.bakdata.fluent_kafka_streams_tests.junit5.TestTopologyExtension;
+import com.bakdata.profilestore.common.avro.FieldRecord;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
-import com.bakdata.profilestore.common.avro.Metadata;
 import com.bakdata.profilestore.core.avro.ChartRecord;
 import com.bakdata.profilestore.core.avro.NamedChartRecord;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
@@ -23,8 +23,11 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 
 public abstract class TopologyBaseTest {
     public static final String INPUT_TOPIC = "listening-events";
+    public static final String ARTIST_INPUT = "artist-names";
+    public static final String ALBUM_INPUT = "album-names";
+    public static final String TRACK_INPUT = "track-names";
     public static final int GLOBAL_STORE_SIZE = 50;
-    private final ProfilestoreMain main = new ProfilestoreMain();
+    private final ProfileStoreMain main = new ProfileStoreMain(INPUT_TOPIC, ARTIST_INPUT, ALBUM_INPUT, TRACK_INPUT);
 
     @RegisterExtension
     protected final TestTopologyExtension<Long, ListeningEvent> testTopology =
@@ -36,14 +39,14 @@ public abstract class TopologyBaseTest {
                 AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
                 this.testTopology.getSchemaRegistryUrl());
 
-        final SpecificAvroSerde<Metadata> metadataSerde = new SpecificAvroSerde<>();
+        final SpecificAvroSerde<FieldRecord> metadataSerde = new SpecificAvroSerde<>();
         metadataSerde.configure(serdeConfig, false);
 
-        for (final String inputTopic : new String[]{this.main.getAlbumTopicName(), this.main.getArtistTopicName(),
-                this.main.getTrackTopicName()}) {
+        for (final String inputTopic : new String[]{ARTIST_INPUT, ALBUM_INPUT, TRACK_INPUT}) {
 
-            final TestInput<Long, Metadata> input = this.testTopology.input(inputTopic).withSerde(Serdes.Long(), metadataSerde);
-            LongStream.range(0, GLOBAL_STORE_SIZE).forEach(i -> input.add(i, new Metadata(i, inputTopic + i)));
+            final TestInput<Long, FieldRecord> input =
+                    this.testTopology.input(inputTopic).withSerde(Serdes.Long(), metadataSerde);
+            LongStream.range(0, GLOBAL_STORE_SIZE).forEach(i -> input.add(i, new FieldRecord(i, inputTopic + i)));
         }
 
     }

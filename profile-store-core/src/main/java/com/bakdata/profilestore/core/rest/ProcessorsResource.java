@@ -1,6 +1,6 @@
 package com.bakdata.profilestore.core.rest;
 
-import com.bakdata.profilestore.core.ProfilestoreMain;
+import com.bakdata.profilestore.core.ProfileStoreMain;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -27,7 +27,7 @@ public class ProcessorsResource {
     @Path("/")
     @Produces(MediaType.APPLICATION_JSON)
     public List<ProcessorMetadata> getProcessors() {
-        return this.streams.allMetadataForStore(ProfilestoreMain.PROFILE_STORE_NAME)
+        return this.streams.allMetadataForStore(ProfileStoreMain.PROFILE_STORE_NAME)
                 .stream()
                 .map(metadata -> new ProcessorMetadata(
                         metadata.host(),

@@ -1,9 +1,8 @@
 package com.bakdata.profilestore.core.processor;
 
 import com.bakdata.profilestore.core.ListeningEventBuilder;
-import com.bakdata.profilestore.core.ProfilestoreMain;
+import com.bakdata.profilestore.core.ProfileStoreMain;
 import com.bakdata.profilestore.core.TopologyBaseTest;
-import com.bakdata.profilestore.core.avro.ChartRecord;
 import com.bakdata.profilestore.core.avro.NamedChartRecord;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import java.time.Instant;
@@ -27,7 +26,7 @@ class ChartProcessorTest extends TopologyBaseTest {
                 .add(2L, builder.setUserId(2L).setAlbumId(3L).setTrackId(4L).build());
 
         final KeyValueStore<Long, UserProfile> chartStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfileStoreMain.PROFILE_STORE_NAME);
 
         final NamedChartRecord first = chartStore.get(1L).getTopTenAlbums().get(0);
         final NamedChartRecord second = chartStore.get(1L).getTopTenAlbums().get(1);
@@ -56,7 +55,7 @@ class ChartProcessorTest extends TopologyBaseTest {
                 .add(1L, builder.setArtistId(2L).setAlbumId(3L).setTrackId(4L).build());
 
         final KeyValueStore<Long, UserProfile> chartStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfileStoreMain.PROFILE_STORE_NAME);
 
         final NamedChartRecord first = chartStore.get(1L).getTopTenArtist().get(0);
         final NamedChartRecord second = chartStore.get(1L).getTopTenArtist().get(1);
@@ -85,7 +84,7 @@ class ChartProcessorTest extends TopologyBaseTest {
                 .add(1L, builder.setTrackId(4L).build());
 
         final KeyValueStore<Long, UserProfile> chartStore =
-                this.testTopology.getTestDriver().getKeyValueStore(ProfilestoreMain.PROFILE_STORE_NAME);
+                this.testTopology.getTestDriver().getKeyValueStore(ProfileStoreMain.PROFILE_STORE_NAME);
 
         final NamedChartRecord first = chartStore.get(1L).getTopTenTracks().get(0);
         final NamedChartRecord second = chartStore.get(1L).getTopTenTracks().get(1);
