@@ -12,24 +12,39 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Properties;
+import java.util.stream.LongStream;
+import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serdes.LongSerde;
 import org.apache.kafka.streams.StreamsConfig;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 class RecommenderProcessorTest {
-    private final RecommenderMain main = new RecommenderMain();
+    static final String LISTENING_EVENT_INPUT = "listening-events";
+    static final String ARTIST_INPUT = "artist-input";
+    static final String ALBUM_INPUT = "album-input";
+    static final String TRACK_INPUT = "track-input";
+    private final RecommenderMain main =
+            new RecommenderMain(LISTENING_EVENT_INPUT, ARTIST_INPUT, ALBUM_INPUT, TRACK_INPUT);
 
     @RegisterExtension
     final TestTopologyExtension<String, ListeningEvent> testTopology =
-            new TestTopologyExtension<String, ListeningEvent>(
-                    props -> this.main.buildTopology(props, "listening-events"), this.getProperties());
+            new TestTopologyExtension<>(this.main::buildTopology, this.getProperties());
+
+    @BeforeEach
+    void fillTables() {
+        for (final String input : Arrays.asList(ARTIST_INPUT, ALBUM_INPUT, TRACK_INPUT)) {
+            final TestInput<Long, String> globalInput = testTopology.input(input).withSerde(Serdes.Long(), Serdes.String());
+            LongStream.range(0, 50).forEach(i -> globalInput.add(i, input + i));
+        }
+    }
 
 
     @Test
     void testAlbumSingleInput() {
-        this.testTopology.input()
+        this.testTopology.input(LISTENING_EVENT_INPUT)
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
         final EnumMap<FieldType, BipartiteGraph> graphMap = this.getGraphMap();
 
@@ -40,8 +55,8 @@ class RecommenderProcessorTest {
     }
 
     @Test
-    public void testArtistSingleInput() {
-        this.testTopology.input()
+    void testArtistSingleInput() {
+        this.testTopology.input(LISTENING_EVENT_INPUT)
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
         final EnumMap<FieldType, BipartiteGraph> graphMap = this.getGraphMap();
 
@@ -53,7 +68,7 @@ class RecommenderProcessorTest {
 
     @Test
     void testTrackSingleInput() {
-        this.testTopology.input()
+        this.testTopology.input(LISTENING_EVENT_INPUT)
                 .add(new ListeningEvent(1L, 2L, 3L, 4L, Instant.now()));
         final EnumMap<FieldType, BipartiteGraph> graphMap = this.getGraphMap();
 
@@ -70,7 +85,7 @@ class RecommenderProcessorTest {
         final long[] album = {3, 3, 4, 5, 6};
         final long[] track = {4, 8, 2, 8, 7};
 
-        final TestInput<String, ListeningEvent> testInput = this.testTopology.input();
+        final TestInput<String, ListeningEvent> testInput = this.testTopology.input(LISTENING_EVENT_INPUT);
 
         for (int i = 0; i < users.length; i++) {
             testInput.add(new ListeningEvent(users[i], artists[i], album[i], track[i], Instant.now()));

@@ -11,24 +11,34 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.common.utils.Bytes;
 import org.apache.kafka.streams.KafkaStreams;
+import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.errors.InvalidStateStoreException;
+import org.apache.kafka.streams.kstream.Materialized;
 import org.apache.kafka.streams.state.HostInfo;
+import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.Stores;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
+@NoArgsConstructor
 @Slf4j
 @Command(name = "recommender", mixinStandardHelpOptions = true,
         description = "Start KafkaStreams application recommender")
 public class RecommenderMain implements Callable<Void> {
     public static final String LEFT_INDEX_NAME = "recommender-left-index";
     public static final String RIGHT_INDEX_NAME = "recommender-right-index";
+    public static final Map<FieldType, String> storeNames = getStoreNames();
+
 
     @CommandLine.Option(names = "--application-id", required = true, description = "name of streams application")
     private String applicationId;
@@ -45,9 +55,29 @@ public class RecommenderMain implements Callable<Void> {
     @CommandLine.Option(names = "--schema-registry-url", required = true, description = "address of schema registry")
     private String schemaRegistryUrl;
 
-    @CommandLine.Option(names = "--topic", defaultValue = "listening-events",
+    @CommandLine.Option(names = "--listening-event-topic", defaultValue = "listening-events",
             description = "name of topic with incoming interactions")
-    private String topicName;
+    private String listeningEventTopicName;
+
+    @CommandLine.Option(names = "--artist-topic", defaultValue = "artists",
+            description = "name of topic with incoming artists")
+    private String artistTopicName;
+
+    @CommandLine.Option(names = "--album-topic", defaultValue = "albums",
+            description = "name of topic with incoming albums")
+    private String albumTopicName;
+
+    @CommandLine.Option(names = "--track-topic", defaultValue = "tracks",
+            description = "name of topic with incoming tracks")
+    private String trackTopicName;
+
+    public RecommenderMain(final String listeningEventTopicName, final String artistTopicName,
+            final String albumTopicName, final String trackTopicName) {
+        this.listeningEventTopicName = listeningEventTopicName;
+        this.artistTopicName = artistTopicName;
+        this.albumTopicName = albumTopicName;
+        this.trackTopicName = trackTopicName;
+    }
 
     public static void main(final String[] args) {
         System.exit(new CommandLine(new RecommenderMain()).execute(args));
@@ -56,7 +86,7 @@ public class RecommenderMain implements Callable<Void> {
     @Override
     public Void call() throws Exception {
         final Properties properties = this.getProperties();
-        final Topology topology = this.buildTopology(properties, this.topicName);
+        final Topology topology = this.buildTopology(properties);
         final KafkaStreams streams = new KafkaStreams(topology, properties);
 
         streams.cleanUp();
@@ -64,7 +94,8 @@ public class RecommenderMain implements Callable<Void> {
         this.waitForKafkaStreams(streams);
 
         final Map<FieldType, BipartiteGraph> graph = this.getGraph(streams);
-        final RestService restService = new RestService(new HostInfo(this.host, this.port), graph);
+
+        final RestService restService = new RestService(new HostInfo(this.host, this.port), graph, streams, storeNames);
         restService.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -118,15 +149,23 @@ public class RecommenderMain implements Callable<Void> {
      * @param properties the properties of the KafkaStreams application
      * @return the topology of the application
      */
-    public Topology buildTopology(final Properties properties, final String inputTopic) {
+    public Topology buildTopology(final Properties properties) {
         final Map<String, String> serdeConfig = Collections.singletonMap(
                 AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
                 properties.getProperty(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG));
         final SpecificAvroSerde<AdjacencyList> adjacencyListSerde = new SpecificAvroSerde<>();
         adjacencyListSerde.configure(serdeConfig, true);
 
-        Topology topology = new Topology()
-                .addSource("interaction-source", inputTopic)
+        final StreamsBuilder builder = new StreamsBuilder();
+
+        this.addGlobalNameStore(builder, this.albumTopicName, storeNames.get(FieldType.ALBUM));
+        this.addGlobalNameStore(builder, this.artistTopicName, storeNames.get(FieldType.ARTIST));
+        this.addGlobalNameStore(builder, this.trackTopicName, storeNames.get(FieldType.TRACK));
+
+        Topology topology = builder.build();
+
+        topology
+                .addSource("interaction-source", this.listeningEventTopicName)
                 .addProcessor("interaction-processor", RecommenderProcessor::new, "interaction-source");
 
         for (final FieldType type : FieldType.values()) {
@@ -154,6 +193,13 @@ public class RecommenderMain implements Callable<Void> {
                         Serdes.Long(), adjacencyListSerde), "interaction-processor");
     }
 
+    private void addGlobalNameStore(final StreamsBuilder builder, final String topicName, final String storeName) {
+        builder.globalTable(topicName,
+                Materialized.<Long, String, KeyValueStore<Bytes, byte[]>>as(storeName)
+                        .withKeySerde(Serdes.Long())
+                        .withValueSerde(Serdes.String()));
+    }
+
     /**
      * Wait for the application to change status to running
      *
@@ -170,6 +216,12 @@ public class RecommenderMain implements Callable<Void> {
                 Thread.sleep(1000);
             }
         }
+    }
+
+    private static Map<FieldType, String> getStoreNames() {
+        return Stream.of(FieldType.values()).collect(Collectors.toMap(
+                type -> type,
+                type -> type.toString().toLowerCase() + "-store"));
     }
 
 }
