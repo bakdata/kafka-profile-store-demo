@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: profile-store-configmap
+data:
+  kafka: kafka:9092
+  schema-registry: http://ps-schema-registry:8081
+  core: profile-store-core:80
+  recommender: profile-store-recommender:80

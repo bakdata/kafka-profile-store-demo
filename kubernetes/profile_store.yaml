@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profile-store-core
+  labels:
+    app: profile-store-core
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profile-store-core
+  template:
+    metadata:
+      labels:
+        app: profile-store-core
+    spec:
+      containers:
+        - name: profile-store-core
+          image: profilestoreregistry.azurecr.io/core
+          workingDir: /app
+          args:
+            - --application-id
+            - profile-store
+            - --host
+            - $(POD_IP)
+            - --port
+            - "8080"
+            - --brokers
+            - $(KAFKA_HOSTS)
+            - --schema-registry-url
+            - $(SCHEMA_REGISTRY_URL)
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: KAFKA_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  key: kafka
+                  name: profile-store-configmap
+            - name: SCHEMA_REGISTRY_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: schema-registry
+                  name: profile-store-configmap
+          ports:
+            - containerPort: 8080
+              name: ps-core-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: profile-store-core
+  labels:
+    app: profile-store-core
+spec:
+  type: LoadBalancer
+  selector:
+    app: profile-store-core
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      name: ps-core-api

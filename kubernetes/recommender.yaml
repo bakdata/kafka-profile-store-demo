@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profile-store-recommender
+  labels:
+    app: profile-store-recommender
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profile-store-recommender
+  template:
+    metadata:
+      labels:
+        app: profile-store-recommender
+    spec:
+      containers:
+        - name: profile-store-recommender
+          image: profilestoreregistry.azurecr.io/recommender
+          workingDir: /app
+          args:
+            - --application-id
+            - profile-store-recommender
+            - --host
+            - $(POD_IP)
+            - --port
+            - "8080"
+            - --brokers
+            - $(KAFKA_HOSTS)
+            - --schema-registry-url
+            - $(SCHEMA_REGISTRY_URL)
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: KAFKA_HOSTS
+              valueFrom:
+                configMapKeyRef:
+                  key: kafka
+                  name: profile-store-configmap
+            - name: SCHEMA_REGISTRY_URL
+              valueFrom:
+                configMapKeyRef:
+                  key: schema-registry
+                  name: profile-store-configmap
+          ports:
+            - containerPort: 8080
+              name: recommender-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: profile-store-recommender
+  labels:
+    app: profile-store-recommender
+spec:
+  type: LoadBalancer
+  selector:
+    app: profile-store-recommender
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      name: recommender-api
