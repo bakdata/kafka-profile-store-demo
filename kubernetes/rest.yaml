@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: profile-store-rest
+  labels:
+    app: profile-store-rest
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: profile-store-rest
+  template:
+    metadata:
+      labels:
+        app: profile-store-rest
+    spec:
+      containers:
+        - name: profile-store-rest
+          image: profilestoreregistry.azurecr.io/rest
+          workingDir: /app
+          args:
+            - --host
+            - $(POD_IP)
+            - --port
+            - "8080"
+            - --profile-store
+            - $(CORE_HOST)
+            - --recommender
+            - $(RECOMMENDER_HOST)
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: CORE_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: core
+                  name: profile-store-configmap
+            - name: RECOMMENDER_HOST
+              valueFrom:
+                configMapKeyRef:
+                  key: recommender
+                  name: profile-store-configmap
+          ports:
+            - containerPort: 8080
+              name: rest-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: profile-store-rest
+  labels:
+    app: profile-store-rest
+spec:
+  type: LoadBalancer
+  selector:
+    app: profile-store-rest
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+      name: rest-api
