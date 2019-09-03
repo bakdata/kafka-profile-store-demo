@@ -23,8 +23,8 @@ gcloud compute addresses create ${KAFKA_IP_NAME_2} --region ${REGION}
 gcloud compute addresses create ${SR_IP_NAME} --region ${REGION}
 
 KAFKA_IP_0="$(gcloud compute addresses describe ${KAFKA_IP_NAME_0} --region ${REGION} --format='value(address)')"
-KAFKA_IP_1="$(gcloud compute addresses describe ${KAFKA_IP_NAME_0} --region ${REGION} --format='value(address)')"
-KAFKA_IP_2="$(gcloud compute addresses describe ${KAFKA_IP_NAME_0} --region ${REGION} --format='value(address)')"
+KAFKA_IP_1="$(gcloud compute addresses describe ${KAFKA_IP_NAME_1} --region ${REGION} --format='value(address)')"
+KAFKA_IP_2="$(gcloud compute addresses describe ${KAFKA_IP_NAME_2} --region ${REGION} --format='value(address)')"
 SR_IP="$(gcloud compute addresses describe ${SR_IP_NAME} --region ${REGION} --format='value(address)')"
 
 echo "Setup Kafka"
