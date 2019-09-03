@@ -10,6 +10,7 @@ import java.util.Collections;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -117,7 +118,8 @@ public class RecommenderMain implements Callable<Void> {
      */
     public Properties getProperties() {
         final Properties props = new Properties();
-        props.put(StreamsConfig.APPLICATION_ID_CONFIG, this.applicationId);
+        // add UUID to prevent Kafka's partitioning
+        props.put(StreamsConfig.APPLICATION_ID_CONFIG, this.applicationId + UUID.randomUUID());
         props.put(StreamsConfig.APPLICATION_SERVER_CONFIG, String.format("%s:%s", this.host, this.port));
         props.put(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG, this.schemaRegistryUrl);
         props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, this.brokers);
