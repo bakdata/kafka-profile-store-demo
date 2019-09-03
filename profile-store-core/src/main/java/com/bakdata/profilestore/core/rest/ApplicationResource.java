@@ -1,6 +1,6 @@
 package com.bakdata.profilestore.core.rest;
 
-import com.bakdata.profilestore.core.ProfilestoreMain;
+import com.bakdata.profilestore.core.ProfileStoreMain;
 import java.util.Map;
 import java.util.stream.Collectors;
 import javax.ws.rs.GET;
@@ -25,7 +25,7 @@ public class ApplicationResource {
     @Path("/all")
     @Produces(MediaType.APPLICATION_JSON)
     public Map<Integer, String> getApplicationHosts() {
-        return Seq.seq(this.streams.allMetadataForStore(ProfilestoreMain.PROFILE_STORE_NAME))
+        return Seq.seq(this.streams.allMetadataForStore(ProfileStoreMain.PROFILE_STORE_NAME))
                 .flatMap(ApplicationResource::getAddressesForPartitions)
                 .distinct(PartitionAddress::getPartition)
                 .collect(Collectors.toMap(PartitionAddress::getPartition, PartitionAddress::getAddress));
