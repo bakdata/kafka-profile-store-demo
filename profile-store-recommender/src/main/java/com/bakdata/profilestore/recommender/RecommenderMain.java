@@ -1,5 +1,6 @@
 package com.bakdata.profilestore.recommender;
 
+import com.bakdata.profilestore.common.avro.FieldRecord;
 import com.bakdata.profilestore.recommender.avro.AdjacencyList;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import com.bakdata.profilestore.recommender.graph.KeyValueGraph;
@@ -154,13 +155,16 @@ public class RecommenderMain implements Callable<Void> {
                 AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
                 properties.getProperty(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG));
         final SpecificAvroSerde<AdjacencyList> adjacencyListSerde = new SpecificAvroSerde<>();
-        adjacencyListSerde.configure(serdeConfig, true);
+        adjacencyListSerde.configure(serdeConfig, false);
+
+        final SpecificAvroSerde<FieldRecord> namedRecordSerde = new SpecificAvroSerde<>();
+        namedRecordSerde.configure(serdeConfig, false);
 
         final StreamsBuilder builder = new StreamsBuilder();
 
-        this.addGlobalNameStore(builder, this.albumTopicName, storeNames.get(FieldType.ALBUM));
-        this.addGlobalNameStore(builder, this.artistTopicName, storeNames.get(FieldType.ARTIST));
-        this.addGlobalNameStore(builder, this.trackTopicName, storeNames.get(FieldType.TRACK));
+        this.addGlobalNameStore(builder, this.albumTopicName, storeNames.get(FieldType.ALBUM), namedRecordSerde);
+        this.addGlobalNameStore(builder, this.artistTopicName, storeNames.get(FieldType.ARTIST), namedRecordSerde);
+        this.addGlobalNameStore(builder, this.trackTopicName, storeNames.get(FieldType.TRACK), namedRecordSerde);
 
         Topology topology = builder.build();
 
@@ -193,11 +197,12 @@ public class RecommenderMain implements Callable<Void> {
                         Serdes.Long(), adjacencyListSerde), "interaction-processor");
     }
 
-    private void addGlobalNameStore(final StreamsBuilder builder, final String topicName, final String storeName) {
+    private void addGlobalNameStore(final StreamsBuilder builder, final String topicName, final String storeName,
+            final SpecificAvroSerde<FieldRecord> serde) {
         builder.globalTable(topicName,
-                Materialized.<Long, String, KeyValueStore<Bytes, byte[]>>as(storeName)
+                Materialized.<Long, FieldRecord, KeyValueStore<Bytes, byte[]>>as(storeName)
                         .withKeySerde(Serdes.Long())
-                        .withValueSerde(Serdes.String()));
+                        .withValueSerde(serde));
     }
 
     /**

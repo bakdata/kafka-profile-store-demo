@@ -33,13 +33,15 @@ public class UserProfileResource {
             final KafkaStreams kafkaStreams, final HostInfo hostInfo) {
         this.streams = kafkaStreams;
         this.hostInfo = hostInfo;
-        this.client =  ClientBuilder.newBuilder().register(JacksonFeature.class).build();
+        this.client = ClientBuilder.newBuilder()
+                .register(JacksonFeature.class)
+                .register(UserProfileResolver.class).build();
     }
 
     @GET
     @Path("/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
-    public String getUserProfile(@PathParam("userId") final long userId, @Context final UriInfo uriInfo) {
+    public UserProfile getUserProfile(@PathParam("userId") final long userId, @Context final UriInfo uriInfo) {
         log.info("Request for user {}", userId);
         final StreamsMetadata metadata =
                 this.streams.metadataForKey(ProfileStoreMain.PROFILE_STORE_NAME, userId, Serdes.Long().serializer());
@@ -49,7 +51,7 @@ public class UserProfileResource {
         }
 
         if (!metadata.hostInfo().equals(this.hostInfo)) {
-            return this.fetchUserProfile(metadata.hostInfo(), uriInfo.getPath()).toString();
+            return this.fetchUserProfile(metadata.hostInfo(), uriInfo.getPath());
         }
 
         final ReadOnlyKeyValueStore<Long, UserProfile> store =
@@ -62,7 +64,8 @@ public class UserProfileResource {
         if (profile == null) {
             throw new NotFoundException();
         }
-        return profile.toString();
+
+        return profile;
     }
 
     private UserProfile fetchUserProfile(final HostInfo host, final String path) {
@@ -70,4 +73,5 @@ public class UserProfileResource {
                 .request(MediaType.APPLICATION_JSON_TYPE)
                 .get(UserProfile.class);
     }
+
 }

@@ -1,7 +1,7 @@
 {
   "namespace": "com.bakdata.profilestore.common.avro",
   "type": "record",
-  "name": "NamedRecord",
+  "name": "FieldRecord",
   "fields": [
     {
       "name": "id",

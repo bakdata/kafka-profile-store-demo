@@ -1,8 +1,5 @@
 package com.bakdata.profilestore.recommender.rest;
 
-import static org.apache.kafka.common.requests.DeleteAclsResponse.log;
-
-import com.bakdata.profilestore.common.avro.NamedRecord;
 import com.bakdata.profilestore.recommender.FieldType;
 import com.bakdata.profilestore.recommender.algorithm.Salsa;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
@@ -18,10 +15,16 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
+import javax.xml.bind.annotation.XmlRootElement;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.state.QueryableStoreTypes;
 import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
 
+@Slf4j
 @Path("/recommendation")
 public class RestResource {
     private final Map<FieldType, BipartiteGraph> graphs;
@@ -49,7 +52,7 @@ public class RestResource {
     @GET
     @Path("/{userId}/{type}")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<NamedRecord> getRecommendationsForUser(
+    public List<RecommendationRecord> getRecommendationsForUser(
             @PathParam("userId") final long userId,
             @PathParam("type") final String type,
             @DefaultValue("10") @QueryParam("limit") final int limit,
@@ -67,7 +70,7 @@ public class RestResource {
                 this.steams.store(this.storeNames.get(recommendationType), QueryableStoreTypes.keyValueStore());
 
         return ids.stream()
-                .map(id -> new NamedRecord(id, nameTable.get(id)))
+                .map(id -> new RecommendationRecord(id, nameTable.get(id)))
                 .collect(Collectors.toList());
 
     }
@@ -84,5 +87,15 @@ public class RestResource {
             log.info("No recommendation computed", e);
             return Collections.emptyList();
         }
+    }
+
+
+    @XmlRootElement
+    @AllArgsConstructor
+    @Setter
+    @Getter
+    private class RecommendationRecord {
+        long id;
+        String name;
     }
 }

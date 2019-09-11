@@ -1,5 +1,9 @@
 package com.bakdata.profilestore.rest;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import javax.ws.rs.DefaultValue;
@@ -43,6 +47,10 @@ public class RestResource {
     @Path("/profile/{userId}")
     @Produces(MediaType.APPLICATION_JSON)
     public Response getUserProfile(@PathParam("userId") final long userId, @Context final UriInfo uriInfo) {
+        return this.callProfileStore(userId, uriInfo.getPath());
+    }
+
+    private Response callProfileStore(final long userId, final String path) {
         if (this.partitionToHostMap.isEmpty() || (System.currentTimeMillis() - this.lastUpdate) > TIMEOUT) {
             log.debug("Update current profile store hosts");
             this.partitionToHostMap =
@@ -60,12 +68,13 @@ public class RestResource {
         final int partition = UserPartitioner.calculatePartition(userId, this.partitionToHostMap.size());
         final String targetHost = this.partitionToHostMap.getOrDefault(partition, getAddress(this.profileHost));
 
-        final String url = getURL(targetHost, uriInfo.getPath());
+        final String url = getURL(this.profileHost, path);
         log.debug("Forward request to {}", url);
         return this.client.target(url)
                 .request(MediaType.APPLICATION_JSON)
                 .get();
     }
+
 
     @GET
     @Path("/recommendation/{userId}/{type}")
@@ -80,14 +89,41 @@ public class RestResource {
             @DefaultValue("0.1") @QueryParam("resetProbability") final float resetProbability) {
         // Every host has all data, so it does not matter which one we call
         // This assumes there is a load balancer in place
-        final String url = getURL(this.recommenderHost, uriInfo.getPath());
+        return this.callRecommender(uriInfo.getPath());
+    }
+
+    private Response callRecommender(final String path) {
+        final String url = getURL(this.recommenderHost, path);
         log.debug("Forward request to {}", url);
         return this.client.target(url)
                 .request(MediaType.APPLICATION_JSON)
                 .get();
     }
 
+    @GET
+    @Path("/complete/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createCompleteUserProfile(@PathParam("userId") final long userId) throws IOException {
+        log.info("Incoming request");
+        final String profile = this.callProfileStore(userId, "profile/" + userId).readEntity(String.class);
+
+        final ObjectMapper mapper = new ObjectMapper();
+        final ObjectNode profileNode = (ObjectNode) mapper.readTree(profile);
+
+        for (final FieldType fieldType : FieldType.values()) {
+            final String fieldRecommendations =
+                    this.callRecommender(
+                            String.format("recommendation/%d/%s", userId, fieldType.toString().toLowerCase()))
+                            .readEntity(String.class);
+
+            final ArrayNode tracksNode = (ArrayNode) mapper.readTree(fieldRecommendations);
+            profileNode.putArray(fieldType.toString().toLowerCase() + "Recommendations").addAll(tracksNode);
+        }
+        return Response.ok(profileNode.toString()).build();
+    }
+
     private static String getAddress(final HostInfo address) {
+
         return String.format("http://%s", address);
     }
 
@@ -97,6 +133,12 @@ public class RestResource {
 
     private static String getURL(final HostInfo hostInfo, final String path) {
         return String.format("http://%s:%d/%s", hostInfo.host(), hostInfo.port(), path);
+    }
+
+    private enum FieldType {
+        ARTIST,
+        ALBUM,
+        TRACK
     }
 
 }
