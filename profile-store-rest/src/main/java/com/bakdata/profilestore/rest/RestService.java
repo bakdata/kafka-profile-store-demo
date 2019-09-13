@@ -1,8 +1,9 @@
-package com.bakdata.profilestore.core.rest;
+package com.bakdata.profilestore.rest;
 
 import java.net.SocketException;
+import java.net.URI;
+import java.util.Set;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.state.HostInfo;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -13,16 +14,14 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 @Slf4j
-public class ProfileStoreRestService {
+public class RestService {
     private final HostInfo hostInfo;
-    private final UserProfileResource profileResource;
-    private final ApplicationResource applicationResource;
+    private final Set<Object> resources;
     private Server server;
 
-    public ProfileStoreRestService(final HostInfo hostInfo, final KafkaStreams streams) {
+    public RestService(final HostInfo hostInfo, final Object... resources) {
         this.hostInfo = hostInfo;
-        this.profileResource = new UserProfileResource(streams, hostInfo);
-        this.applicationResource = new ApplicationResource(streams);
+        this.resources = Set.of(resources);
     }
 
     public void start() throws Exception {
@@ -34,8 +33,7 @@ public class ProfileStoreRestService {
 
         final ResourceConfig config = new ResourceConfig();
         config.register(JacksonFeature.class);
-        config.register(this.profileResource);
-        config.register(this.applicationResource);
+        this.resources.forEach(config::register);
 
         final ServletContainer container = new ServletContainer(config);
         final ServletHolder holder = new ServletHolder(container);
@@ -43,7 +41,10 @@ public class ProfileStoreRestService {
 
         final ServerConnector connector = new ServerConnector(this.server);
         connector.setHost(this.hostInfo.host());
-        connector.setPort(this.hostInfo.port());
+        // if port is 0, the connector will automatically find a free port
+        if (this.hostInfo.port() != 0) {
+            connector.setPort(this.hostInfo.port());
+        }
         this.server.addConnector(connector);
 
         contextHandler.start();
@@ -51,16 +52,28 @@ public class ProfileStoreRestService {
 
         try {
             this.server.start();
-            this.server.join();
         } catch (final SocketException exception) {
             log.error("Unavailable: {} : {}", this.hostInfo.host(), this.hostInfo.port());
             throw new Exception(exception.toString());
         }
     }
 
+    public void join() {
+        try {
+            this.server.join();
+        } catch (final InterruptedException e) {
+            log.error("Server could not join thread", e);
+        }
+    }
+
     public void stop() throws Exception {
         if (this.server != null) {
             this.server.stop();
+            log.info("Server stopped");
         }
+    }
+
+    public URI getHost() {
+        return this.server.getURI();
     }
 }
