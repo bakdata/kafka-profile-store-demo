@@ -215,7 +215,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>com.bakdata.profilestore.core.ProfilestoreMain</mainClass>
+                            <mainClass>com.bakdata.profilestore.recommender.RecommenderMain</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
