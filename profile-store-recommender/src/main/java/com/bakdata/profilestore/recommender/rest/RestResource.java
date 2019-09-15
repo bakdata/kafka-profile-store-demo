@@ -57,19 +57,32 @@ public class RestResource {
             @DefaultValue("100") @QueryParam("walkLength") final int walkLength,
             @DefaultValue("0.1") @QueryParam("resetProbability") final float resetProbability) {
         log.info("Request for user {} and type {}", userId, type);
-        final FieldType recommendationType = FieldType.valueOf(type.toUpperCase());
-        List<Long> ids;
-        try {
-            ids = new Salsa(this.graphs.get(recommendationType), new Random())
-                    .compute(userId, walks, walkLength, resetProbability, limit);
-        } catch (final RuntimeException e) {
-            log.info("No recommendation computed", e);
-            ids = Collections.emptyList();
-        }
 
+        final FieldType recommendationType = FieldType.valueOf(type.toUpperCase());
+        final Salsa salsa = new Salsa(this.graphs.get(recommendationType), new Random());
+        final List<Long> ids = this.computeRecommendations(salsa, userId, limit, walks, walkLength, resetProbability);
+
+        // store is backed by a GlobalKTable
         final ReadOnlyKeyValueStore<Long, String> nameTable =
                 this.steams.store(this.storeNames.get(recommendationType), QueryableStoreTypes.keyValueStore());
-        return ids.stream().map(id -> new NamedRecord(id, nameTable.get(id))).collect(Collectors.toList());
 
+        return ids.stream()
+                .map(id -> new NamedRecord(id, nameTable.get(id)))
+                .collect(Collectors.toList());
+
+    }
+
+    private List<Long> computeRecommendations(final Salsa salsa,
+            final long userId,
+            final int limit,
+            final int walks,
+            final int walkLength,
+            final float resetProbability) {
+        try {
+            return salsa.compute(userId, walks, walkLength, resetProbability, limit);
+        } catch (final RuntimeException e) {
+            log.info("No recommendation computed", e);
+            return Collections.emptyList();
+        }
     }
 }
