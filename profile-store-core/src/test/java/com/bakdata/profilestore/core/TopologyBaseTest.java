@@ -4,16 +4,11 @@ import com.bakdata.fluent_kafka_streams_tests.TestInput;
 import com.bakdata.fluent_kafka_streams_tests.junit5.TestTopologyExtension;
 import com.bakdata.profilestore.common.avro.FieldRecord;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
-import com.bakdata.profilestore.core.avro.ChartRecord;
-import com.bakdata.profilestore.core.avro.NamedChartRecord;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serdes.LongSerde;
@@ -43,18 +38,12 @@ public abstract class TopologyBaseTest {
         metadataSerde.configure(serdeConfig, false);
 
         for (final String inputTopic : new String[]{ARTIST_INPUT, ALBUM_INPUT, TRACK_INPUT}) {
-
+            final String namePrefix = inputTopic.split("-")[0].toUpperCase();
             final TestInput<Long, FieldRecord> input =
                     this.testTopology.input(inputTopic).withSerde(Serdes.Long(), metadataSerde);
-            LongStream.range(0, GLOBAL_STORE_SIZE).forEach(i -> input.add(i, new FieldRecord(i, inputTopic + i)));
+            LongStream.range(0, GLOBAL_STORE_SIZE)
+                    .forEach(i -> input.add(i, new FieldRecord(i, namePrefix + "_" + i)));
         }
-
-    }
-
-    public static List<ChartRecord> namedToUnnamedRecord(final Collection<NamedChartRecord> records) {
-        return records.stream()
-                .map(namedChartRecord -> new ChartRecord(namedChartRecord.getId(), namedChartRecord.getCountPlays()))
-                .collect(Collectors.toList());
     }
 
     private Properties getProperties() {
