@@ -1,7 +1,7 @@
 package com.bakdata.profilestore.core.processor;
 
-import com.bakdata.profilestore.core.ProfilestoreMain;
-import com.bakdata.profilestore.core.avro.ChartRecord;
+import com.bakdata.profilestore.core.ProfileStoreMain;
+import com.bakdata.profilestore.core.avro.NamedChartRecord;
 import com.bakdata.profilestore.core.avro.UserProfile;
 import com.bakdata.profilestore.core.fields.FieldHandler;
 import java.util.Comparator;
@@ -15,7 +15,7 @@ import org.apache.kafka.streams.state.KeyValueStore;
 import org.jooq.lambda.Seq;
 
 @Slf4j
-public class ChartsProcessor implements Processor<Long, ChartRecord> {
+public class ChartsProcessor implements Processor<Long, NamedChartRecord> {
     private KeyValueStore<Long, UserProfile> profileStore;
     private final int chartSize;
     private final FieldHandler fieldHandler;
@@ -29,24 +29,24 @@ public class ChartsProcessor implements Processor<Long, ChartRecord> {
     public void init(final ProcessorContext processorContext) {
         this.profileStore =
                 (KeyValueStore<Long, UserProfile>) processorContext
-                        .getStateStore(ProfilestoreMain.PROFILE_STORE_NAME);
+                        .getStateStore(ProfileStoreMain.PROFILE_STORE_NAME);
     }
 
     @Override
-    public void process(final Long userId, final ChartRecord chartRecord) {
+    public void process(final Long userId, final NamedChartRecord chartRecord) {
         final UserProfile profile = DefaultUserProfile.getOrDefault(this.profileStore.get(userId));
-        final List<ChartRecord> charts = this.fieldHandler.getCharts(profile);
+        final List<NamedChartRecord> charts = this.fieldHandler.getCharts(profile);
         final UserProfile updatedProfile =
                 this.fieldHandler.updateProfile(profile, this.updateCharts(charts, chartRecord));
         this.profileStore.put(userId, updatedProfile);
     }
 
-    private List<ChartRecord> updateCharts(final List<ChartRecord> charts, final ChartRecord newRecord) {
+    private List<NamedChartRecord> updateCharts(final List<NamedChartRecord> charts, final NamedChartRecord newRecord) {
         return Seq.concat(charts.stream(), Stream.of(newRecord))
                 // if there are two records with the same id, remove the one with the smaller count
-                .grouped(ChartRecord::getId)
-                .map(tuple -> tuple.v2().max(Comparator.comparingLong(ChartRecord::getCountPlays)).get())
-                .sorted(Comparator.comparingLong(ChartRecord::getCountPlays).reversed())
+                .grouped(NamedChartRecord::getId)
+                .map(tuple -> tuple.v2().max(Comparator.comparingLong(NamedChartRecord::getCountPlays)).get())
+                .sorted(Comparator.comparingLong(NamedChartRecord::getCountPlays).reversed())
                 .limit(this.chartSize)
                 .collect(Collectors.toList());
     }
