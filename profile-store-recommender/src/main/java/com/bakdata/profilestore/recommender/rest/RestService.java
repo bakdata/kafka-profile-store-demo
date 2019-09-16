@@ -5,6 +5,7 @@ import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import java.net.SocketException;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.state.HostInfo;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
@@ -20,9 +21,10 @@ public class RestService {
     private final RestResource resource;
     private Server server;
 
-    public RestService(final HostInfo hostInfo, final Map<FieldType, BipartiteGraph> graphs) {
+    public RestService(final HostInfo hostInfo, final Map<FieldType, BipartiteGraph> graphs,
+            final KafkaStreams kafkaStreams, final Map<FieldType, String> storeNames) {
         this.hostInfo = hostInfo;
-        this.resource = new RestResource(graphs);
+        this.resource = new RestResource(graphs, kafkaStreams, storeNames);
     }
 
     public void start() throws Exception {
