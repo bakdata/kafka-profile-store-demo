@@ -50,6 +50,45 @@ public class RestResource {
         return this.callProfileStore(userId, uriInfo.getPath());
     }
 
+    @GET
+    @Path("/recommendation/{userId}/{type}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response getRecommendationsForUser(
+            @PathParam("userId") final long userId,
+            @PathParam("type") final String type,
+            @Context final UriInfo uriInfo,
+            @DefaultValue("10") @QueryParam("limit") final int limit,
+            @DefaultValue("1000") @QueryParam("walks") final int walks,
+            @DefaultValue("100") @QueryParam("walkLength") final int walkLength,
+            @DefaultValue("0.1") @QueryParam("resetProbability") final float resetProbability) {
+        // Every host has all data, so it does not matter which one we call
+        // This assumes there is a load balancer in place
+        return this.callRecommender(uriInfo.getPath());
+    }
+
+    @GET
+    @Path("/combined/{userId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response createCompleteUserProfile(@PathParam("userId") final long userId) throws IOException {
+        log.info("Incoming request");
+        final String profile = this.callProfileStore(userId, "profile/" + userId).readEntity(String.class);
+
+        final ObjectMapper mapper = new ObjectMapper();
+        final ObjectNode profileNode = (ObjectNode) mapper.readTree(profile);
+
+        // append recommendations to metrics
+        for (final FieldType fieldType : FieldType.values()) {
+            final String fieldRecommendations =
+                    this.callRecommender(
+                            String.format("recommendation/%d/%s", userId, fieldType.toString().toLowerCase()))
+                            .readEntity(String.class);
+
+            final ArrayNode tracksNode = (ArrayNode) mapper.readTree(fieldRecommendations);
+            profileNode.putArray(fieldType.toString().toLowerCase() + "Recommendations").addAll(tracksNode);
+        }
+        return Response.ok(profileNode.toString()).build();
+    }
+
     private Response callProfileStore(final long userId, final String path) {
         if (this.partitionToHostMap.isEmpty() || (System.currentTimeMillis() - this.lastUpdate) > TIMEOUT) {
             log.debug("Update current profile store hosts");
@@ -68,28 +107,11 @@ public class RestResource {
         final int partition = UserPartitioner.calculatePartition(userId, this.partitionToHostMap.size());
         final String targetHost = this.partitionToHostMap.getOrDefault(partition, getAddress(this.profileHost));
 
-        final String url = getURL(this.profileHost, path);
+        final String url = getURL(targetHost, path);
         log.debug("Forward request to {}", url);
         return this.client.target(url)
                 .request(MediaType.APPLICATION_JSON)
                 .get();
-    }
-
-
-    @GET
-    @Path("/recommendation/{userId}/{type}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response getRecommendationsForUser(
-            @PathParam("userId") final long userId,
-            @PathParam("type") final String type,
-            @Context final UriInfo uriInfo,
-            @DefaultValue("10") @QueryParam("limit") final int limit,
-            @DefaultValue("1000") @QueryParam("walks") final int walks,
-            @DefaultValue("100") @QueryParam("walkLength") final int walkLength,
-            @DefaultValue("0.1") @QueryParam("resetProbability") final float resetProbability) {
-        // Every host has all data, so it does not matter which one we call
-        // This assumes there is a load balancer in place
-        return this.callRecommender(uriInfo.getPath());
     }
 
     private Response callRecommender(final String path) {
@@ -98,28 +120,6 @@ public class RestResource {
         return this.client.target(url)
                 .request(MediaType.APPLICATION_JSON)
                 .get();
-    }
-
-    @GET
-    @Path("/complete/{userId}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public Response createCompleteUserProfile(@PathParam("userId") final long userId) throws IOException {
-        log.info("Incoming request");
-        final String profile = this.callProfileStore(userId, "profile/" + userId).readEntity(String.class);
-
-        final ObjectMapper mapper = new ObjectMapper();
-        final ObjectNode profileNode = (ObjectNode) mapper.readTree(profile);
-
-        for (final FieldType fieldType : FieldType.values()) {
-            final String fieldRecommendations =
-                    this.callRecommender(
-                            String.format("recommendation/%d/%s", userId, fieldType.toString().toLowerCase()))
-                            .readEntity(String.class);
-
-            final ArrayNode tracksNode = (ArrayNode) mapper.readTree(fieldRecommendations);
-            profileNode.putArray(fieldType.toString().toLowerCase() + "Recommendations").addAll(tracksNode);
-        }
-        return Response.ok(profileNode.toString()).build();
     }
 
     private static String getAddress(final HostInfo address) {
