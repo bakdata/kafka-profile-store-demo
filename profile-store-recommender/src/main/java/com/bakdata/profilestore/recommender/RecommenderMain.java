@@ -162,9 +162,9 @@ public class RecommenderMain implements Callable<Void> {
 
         final StreamsBuilder builder = new StreamsBuilder();
 
-        this.addGlobalNameStore(builder, this.albumTopicName, storeNames.get(FieldType.ALBUM), namedRecordSerde);
-        this.addGlobalNameStore(builder, this.artistTopicName, storeNames.get(FieldType.ARTIST), namedRecordSerde);
-        this.addGlobalNameStore(builder, this.trackTopicName, storeNames.get(FieldType.TRACK), namedRecordSerde);
+        this.addGlobalNameStore(builder, this.albumTopicName, storeNames.get(FieldType.ALBUM));
+        this.addGlobalNameStore(builder, this.artistTopicName, storeNames.get(FieldType.ARTIST));
+        this.addGlobalNameStore(builder, this.trackTopicName, storeNames.get(FieldType.TRACK));
 
         Topology topology = builder.build();
 
@@ -197,12 +197,11 @@ public class RecommenderMain implements Callable<Void> {
                         Serdes.Long(), adjacencyListSerde), "interaction-processor");
     }
 
-    private void addGlobalNameStore(final StreamsBuilder builder, final String topicName, final String storeName,
-            final SpecificAvroSerde<FieldRecord> serde) {
+    private void addGlobalNameStore(final StreamsBuilder builder, final String topicName, final String storeName) {
         builder.globalTable(topicName,
-                Materialized.<Long, FieldRecord, KeyValueStore<Bytes, byte[]>>as(storeName)
+                Materialized.<Long, String, KeyValueStore<Bytes, byte[]>>as(storeName)
                         .withKeySerde(Serdes.Long())
-                        .withValueSerde(serde));
+                        .withValueSerde(Serdes.String()));
     }
 
     /**

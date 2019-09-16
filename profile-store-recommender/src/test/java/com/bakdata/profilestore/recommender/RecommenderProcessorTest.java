@@ -3,7 +3,7 @@ package com.bakdata.profilestore.recommender;
 import com.bakdata.fluent_kafka_streams_tests.TestInput;
 import com.bakdata.fluent_kafka_streams_tests.junit5.TestTopologyExtension;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
-import com.bakdata.profilestore.common.avro.NamedRecord;
+import com.bakdata.profilestore.common.avro.FieldRecord;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import com.bakdata.profilestore.recommender.graph.KeyValueGraph;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
@@ -124,15 +124,15 @@ class RecommenderProcessorTest {
                 this.testTopology.getTestDriver().getKeyValueStore(RecommenderMain.storeNames.get(FieldType.TRACK));
 
         final List<Long> trackIds = List.of(4L, 8L, 2L, 7L);
-        final List<NamedRecord> trackNames = trackIds.stream()
-                .map(id -> new NamedRecord(id, nameTable.get(id)))
+        final List<FieldRecord> trackNames = trackIds.stream()
+                .map(id -> new FieldRecord(id, nameTable.get(id)))
                 .collect(Collectors.toList());
 
-        final List<NamedRecord> expectedTrackNames = List.of(
-                NamedRecord.newBuilder().setId(4L).setName("TRACK_4").build(),
-                NamedRecord.newBuilder().setId(8L).setName("TRACK_8").build(),
-                NamedRecord.newBuilder().setId(2L).setName("TRACK_2").build(),
-                NamedRecord.newBuilder().setId(7L).setName("TRACK_7").build()
+        final List<FieldRecord> expectedTrackNames = List.of(
+                FieldRecord.newBuilder().setId(4L).setName("TRACK_4").build(),
+                FieldRecord.newBuilder().setId(8L).setName("TRACK_8").build(),
+                FieldRecord.newBuilder().setId(2L).setName("TRACK_2").build(),
+                FieldRecord.newBuilder().setId(7L).setName("TRACK_7").build()
         );
 
         Assert.assertThat(trackNames, IsIterableContainingInAnyOrder.containsInAnyOrder(expectedTrackNames.toArray()));
@@ -144,15 +144,15 @@ class RecommenderProcessorTest {
                 this.testTopology.getTestDriver().getKeyValueStore(RecommenderMain.storeNames.get(FieldType.ALBUM));
 
         final List<Long> trackIds = List.of(4L, 8L, 2L, 7L);
-        final List<NamedRecord> trackNames = trackIds.stream()
-                .map(id -> new NamedRecord(id, nameTable.get(id)))
+        final List<FieldRecord> trackNames = trackIds.stream()
+                .map(id -> new FieldRecord(id, nameTable.get(id)))
                 .collect(Collectors.toList());
 
-        final List<NamedRecord> expectedTrackNames = List.of(
-                NamedRecord.newBuilder().setId(4L).setName("ALBUM_4").build(),
-                NamedRecord.newBuilder().setId(8L).setName("ALBUM_8").build(),
-                NamedRecord.newBuilder().setId(2L).setName("ALBUM_2").build(),
-                NamedRecord.newBuilder().setId(7L).setName("ALBUM_7").build()
+        final List<FieldRecord> expectedTrackNames = List.of(
+                FieldRecord.newBuilder().setId(4L).setName("ALBUM_4").build(),
+                FieldRecord.newBuilder().setId(8L).setName("ALBUM_8").build(),
+                FieldRecord.newBuilder().setId(2L).setName("ALBUM_2").build(),
+                FieldRecord.newBuilder().setId(7L).setName("ALBUM_7").build()
         );
 
         Assert.assertThat(trackNames, IsIterableContainingInAnyOrder.containsInAnyOrder(expectedTrackNames.toArray()));
@@ -164,15 +164,15 @@ class RecommenderProcessorTest {
                 this.testTopology.getTestDriver().getKeyValueStore(RecommenderMain.storeNames.get(FieldType.ARTIST));
 
         final List<Long> trackIds = List.of(4L, 8L, 2L, 7L);
-        final List<NamedRecord> trackNames = trackIds.stream()
-                .map(id -> new NamedRecord(id, nameTable.get(id)))
+        final List<FieldRecord> trackNames = trackIds.stream()
+                .map(id -> new FieldRecord(id, nameTable.get(id)))
                 .collect(Collectors.toList());
 
-        final List<NamedRecord> expectedTrackNames = List.of(
-                NamedRecord.newBuilder().setId(4L).setName("ARTIST_4").build(),
-                NamedRecord.newBuilder().setId(8L).setName("ARTIST_8").build(),
-                NamedRecord.newBuilder().setId(2L).setName("ARTIST_2").build(),
-                NamedRecord.newBuilder().setId(7L).setName("ARTIST_7").build()
+        final List<FieldRecord> expectedTrackNames = List.of(
+                FieldRecord.newBuilder().setId(4L).setName("ARTIST_4").build(),
+                FieldRecord.newBuilder().setId(8L).setName("ARTIST_8").build(),
+                FieldRecord.newBuilder().setId(2L).setName("ARTIST_2").build(),
+                FieldRecord.newBuilder().setId(7L).setName("ARTIST_7").build()
         );
 
         Assert.assertThat(trackNames, IsIterableContainingInAnyOrder.containsInAnyOrder(expectedTrackNames.toArray()));
