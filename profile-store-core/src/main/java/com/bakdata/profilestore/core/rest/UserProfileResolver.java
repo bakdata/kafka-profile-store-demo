@@ -13,11 +13,12 @@ public class UserProfileResolver implements ContextResolver<ObjectMapper> {
 
     public UserProfileResolver() {
         this.objectMapper = new ObjectMapper();
+        // necessary to correctly (de)serialize timestamp in avro classes
         this.objectMapper.registerModule(new JavaTimeModule());
         this.objectMapper.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
+        // ignore avro specific field when (de)serializing
         this.objectMapper.addMixIn(UserProfile.class, IgnoreAvroProperties.class);
         this.objectMapper.addMixIn(NamedChartRecord.class, IgnoreAvroProperties.class);
-
     }
 
     @Override
@@ -25,6 +26,7 @@ public class UserProfileResolver implements ContextResolver<ObjectMapper> {
         return this.objectMapper;
     }
 
+    // these are the fields we don't want to be serialized
     abstract static class IgnoreAvroProperties {
         @JsonIgnore
         abstract void getSchema();
