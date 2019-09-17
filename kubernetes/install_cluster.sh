@@ -31,4 +31,4 @@ echo "Setup Kafka"
 cat kafka.yaml | sed 's/\${KAFKA_IP_0}'"/$KAFKA_IP_0/g" |sed 's/\${KAFKA_IP_1}'"/$KAFKA_IP_1/g" |sed 's/\${KAFKA_IP_2}'"/$KAFKA_IP_2/g" |helm install --name kafka incubator/kafka -f -
 
 echo "Setup Schema Registry"
-cat schema_registry.yaml | sed 's/\${SR_IP}'"/$SR_IP/g" | helm install --name ps incubator/schema-registry -f
+cat schema_registry.yaml | sed 's/\${SR_IP}'"/$SR_IP/g" | helm install --name ps incubator/schema-registry -f -
