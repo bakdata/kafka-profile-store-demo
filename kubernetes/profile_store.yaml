@@ -29,6 +29,12 @@ spec:
             - $(KAFKA_HOSTS)
             - --schema-registry-url
             - $(SCHEMA_REGISTRY_URL)
+            - --album-topic
+            - album-input
+            - --artist-topic
+            - artist-input
+            - --track-topic
+            - track-input
           env:
             - name: POD_IP
               valueFrom:
