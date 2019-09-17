@@ -78,15 +78,15 @@ public class ProfileStoreMain implements Callable<Void> {
             description = "name of topic with incoming interactions")
     private String listeningEventTopicName;
 
-    @CommandLine.Option(names = "--artist-topic", defaultValue = "artists",
+    @CommandLine.Option(names = "--artist-topic", defaultValue = "artist-input",
             description = "name of topic with incoming artists")
     private String artistTopicName;
 
-    @CommandLine.Option(names = "--album-topic", defaultValue = "albums",
+    @CommandLine.Option(names = "--album-topic", defaultValue = "album-input",
             description = "name of topic with incoming albums")
     private String albumTopicName;
 
-    @CommandLine.Option(names = "--track-topic", defaultValue = "tracks",
+    @CommandLine.Option(names = "--track-topic", defaultValue = "track-input",
             description = "name of topic with incoming tracks")
     private String trackTopicName;
 
