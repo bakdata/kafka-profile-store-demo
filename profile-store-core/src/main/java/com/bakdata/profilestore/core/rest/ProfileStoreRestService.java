@@ -34,6 +34,7 @@ public class ProfileStoreRestService {
 
         final ResourceConfig config = new ResourceConfig();
         config.register(JacksonFeature.class);
+        config.register(UserProfileResolver.class);
         config.register(this.profileResource);
         config.register(this.applicationResource);
 

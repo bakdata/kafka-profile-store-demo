@@ -1,5 +1,6 @@
 package com.bakdata.profilestore.recommender;
 
+import com.bakdata.profilestore.common.avro.FieldRecord;
 import com.bakdata.profilestore.recommender.avro.AdjacencyList;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import com.bakdata.profilestore.recommender.graph.KeyValueGraph;
@@ -154,7 +155,10 @@ public class RecommenderMain implements Callable<Void> {
                 AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
                 properties.getProperty(AbstractKafkaAvroSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG));
         final SpecificAvroSerde<AdjacencyList> adjacencyListSerde = new SpecificAvroSerde<>();
-        adjacencyListSerde.configure(serdeConfig, true);
+        adjacencyListSerde.configure(serdeConfig, false);
+
+        final SpecificAvroSerde<FieldRecord> namedRecordSerde = new SpecificAvroSerde<>();
+        namedRecordSerde.configure(serdeConfig, false);
 
         final StreamsBuilder builder = new StreamsBuilder();
 
