@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: profile-store-core
-          image: profilestoreregistry.azurecr.io/core
+          image: gcr.io/kafkastreams/profile-store-core
           workingDir: /app
           args:
             - --application-id

@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: profile-store-recommender
-          image: profilestoreregistry.azurecr.io/recommender
+          image: gcr.io/kafkastreams/profile-store-recommender
           workingDir: /app
           args:
             - --application-id

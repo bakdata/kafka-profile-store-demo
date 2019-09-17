@@ -17,9 +17,7 @@ import com.bakdata.profilestore.core.processor.LastEventProcessor;
 import com.bakdata.profilestore.core.rest.ProfileStoreRestService;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -45,6 +43,7 @@ import org.apache.kafka.streams.kstream.Produced;
 import org.apache.kafka.streams.state.HostInfo;
 import org.apache.kafka.streams.state.KeyValueStore;
 import org.apache.kafka.streams.state.Stores;
+import org.jooq.lambda.Seq;
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
 
@@ -150,7 +149,8 @@ public class ProfileStoreMain implements Callable<Void> {
 
         final StreamsBuilder builder = new StreamsBuilder();
 
-        // add the GlobalKTable that are used to join the ids of the fields like track or artist with their names
+
+        // add GlobalKTables that are used to join the ids of the fields like track or artist with their names
         final Map<FieldType, GlobalKTable<Long, FieldRecord>> joinTables = this.createGlobalTables(builder, serDes);
 
         // add StateStore for the profile store
@@ -175,25 +175,25 @@ public class ProfileStoreMain implements Callable<Void> {
     private Map<FieldType, GlobalKTable<Long, FieldRecord>> createGlobalTables(final StreamsBuilder builder,
             final ProfileStoreSerDeCollection serDeCollection) {
 
-        final List<GlobalTableData> globalTableDataList = Arrays.asList(
+        final List<GlobalTableData> globalTableDataList = List.of(
                 GlobalTableData.of(FieldType.ARTIST, this.artistTopicName, ARTIST_STORE_NAME),
                 GlobalTableData.of(FieldType.ALBUM, this.albumTopicName, ALBUM_STORE_NAME),
                 GlobalTableData.of(FieldType.TRACK, this.trackTopicName, TRACK_STORE_NAME)
         );
 
-        final EnumMap<FieldType, GlobalKTable<Long, FieldRecord>> joinTables = new EnumMap<>(FieldType.class);
-        for (final GlobalTableData globalTableData : globalTableDataList) {
+        return Seq.seq(globalTableDataList)
+                .toMap(GlobalTableData::getFieldType,
+                        globalTableData -> this.createGlobalKTable(globalTableData, builder, serDeCollection));
+    }
 
-            final GlobalKTable<Long, FieldRecord> table =
-                    builder.globalTable(globalTableData.getInputTopic(),
-                            Materialized.<Long, FieldRecord, KeyValueStore<Bytes, byte[]>>as(
-                                    globalTableData.getStoreName())
-                                    .withKeySerde(serDeCollection.getLongSerDe())
-                                    .withValueSerde(serDeCollection.getFieldRecordSerDe()));
-
-            joinTables.put(globalTableData.getFieldType(), table);
-        }
-        return joinTables;
+    private GlobalKTable<Long, FieldRecord> createGlobalKTable(final GlobalTableData globalTableData,
+            final StreamsBuilder builder,
+            final ProfileStoreSerDeCollection serDeCollection) {
+        return builder.globalTable(globalTableData.getInputTopic(),
+                Materialized.<Long, FieldRecord, KeyValueStore<Bytes, byte[]>>as(
+                        globalTableData.getStoreName())
+                        .withKeySerde(serDeCollection.getLongSerDe())
+                        .withValueSerde(serDeCollection.getFieldRecordSerDe()));
     }
 
     private void addTopKProcessor(final ProfileStoreSerDeCollection serdeCollection,
@@ -206,12 +206,14 @@ public class ProfileStoreMain implements Callable<Void> {
                 Produced.with(serdeCollection.getLongSerDe(), serdeCollection.getChartRecordSerDe());
 
         // add a processor for every field type
-        final FieldHandler[] fieldHandlers = {new AlbumHandler(), new ArtistHandler(), new TrackHandler()};
+        final List<FieldHandler> fieldHandlers = List.of(new AlbumHandler(), new ArtistHandler(), new TrackHandler());
+
         for (final FieldHandler fieldHandler : fieldHandlers) {
 
             final GlobalKTable<Long, FieldRecord> joinTable = joinTables.get(fieldHandler.type());
             final KStream<Long, NamedChartRecord> namedCountUpdateStream =
-                    this.createNamedCountUpdateStream(inputStream, fieldHandler, joinTable, groupedSerde, producedSerde);
+                    this.createNamedCountUpdateStream(inputStream, fieldHandler, joinTable, groupedSerde,
+                            producedSerde);
 
             namedCountUpdateStream.process(() -> new ChartsProcessor(TOP_K, fieldHandler), PROFILE_STORE_NAME);
         }
@@ -219,9 +221,9 @@ public class ProfileStoreMain implements Callable<Void> {
 
     /**
      * Create a stream with the userId as key and a tuple (id, name for id, count of plays) as value
-     *
      */
-    private KStream<Long, NamedChartRecord> createNamedCountUpdateStream(final KStream<Long, ListeningEvent> inputStream,
+    private KStream<Long, NamedChartRecord> createNamedCountUpdateStream(
+            final KStream<Long, ListeningEvent> inputStream,
             final FieldHandler fieldHandler, final GlobalKTable<Long, FieldRecord> joinTable,
             final Grouped<CompositeKey, Long> groupedSerde,
             final Produced<Long, ChartRecord> producedSerde) {

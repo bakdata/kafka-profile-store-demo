@@ -28,7 +28,19 @@
             <name>Confluent</name>
             <url>https://packages.confluent.io/maven/</url>
         </repository>
+        <repository>
+            <id>oss.sonatype.org-snapshot</id>
+            <name>Sonatype Snapshots</name>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
     </repositories>
+
     <pluginRepositories>
         <pluginRepository>
             <id>confluent</id>
@@ -155,7 +167,7 @@
         <dependency>
             <groupId>com.bakdata.fluent-kafka-streams-tests</groupId>
             <artifactId>fluent-kafka-streams-tests-junit5</artifactId>
-            <version>2.0.0</version>
+            <version>2.0.2-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>

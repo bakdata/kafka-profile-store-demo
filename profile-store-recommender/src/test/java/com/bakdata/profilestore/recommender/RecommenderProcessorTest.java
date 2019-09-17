@@ -3,6 +3,7 @@ package com.bakdata.profilestore.recommender;
 import com.bakdata.fluent_kafka_streams_tests.TestInput;
 import com.bakdata.fluent_kafka_streams_tests.junit5.TestTopologyExtension;
 import com.bakdata.profilestore.common.avro.ListeningEvent;
+import com.bakdata.profilestore.common.avro.NamedRecord;
 import com.bakdata.profilestore.recommender.graph.BipartiteGraph;
 import com.bakdata.profilestore.recommender.graph.KeyValueGraph;
 import io.confluent.kafka.serializers.AbstractKafkaAvroSerDeConfig;
@@ -11,11 +12,16 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Properties;
+import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.common.serialization.Serdes.LongSerde;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.state.ReadOnlyKeyValueStore;
+import org.hamcrest.collection.IsIterableContainingInAnyOrder;
+import org.junit.Assert;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,9 +41,11 @@ class RecommenderProcessorTest {
 
     @BeforeEach
     void fillTables() {
-        for (final String input : Arrays.asList(ARTIST_INPUT, ALBUM_INPUT, TRACK_INPUT)) {
-            final TestInput<Long, String> globalInput = testTopology.input(input).withSerde(Serdes.Long(), Serdes.String());
-            LongStream.range(0, 50).forEach(i -> globalInput.add(i, input + i));
+        for (final String input : List.of(ARTIST_INPUT, ALBUM_INPUT, TRACK_INPUT)) {
+            final String namePrefix = input.split("-")[0].toUpperCase();
+            final TestInput<Long, String> globalInput =
+                    this.testTopology.input(input).withSerde(Serdes.Long(), Serdes.String());
+            LongStream.range(0, 50).forEach(i -> globalInput.add(i, namePrefix + "_" + i));
         }
     }
 
@@ -108,6 +116,66 @@ class RecommenderProcessorTest {
         Assertions.assertEquals(Arrays.asList(5L, 6L),
                 graphMap.get(FieldType.TRACK).getRightNodeNeighbors(8));
 
+    }
+
+    @Test
+    void testTrackNameResolving() {
+        final ReadOnlyKeyValueStore<Long, String> nameTable =
+                this.testTopology.getTestDriver().getKeyValueStore(RecommenderMain.storeNames.get(FieldType.TRACK));
+
+        final List<Long> trackIds = List.of(4L, 8L, 2L, 7L);
+        final List<NamedRecord> trackNames = trackIds.stream()
+                .map(id -> new NamedRecord(id, nameTable.get(id)))
+                .collect(Collectors.toList());
+
+        final List<NamedRecord> expectedTrackNames = List.of(
+                NamedRecord.newBuilder().setId(4L).setName("TRACK_4").build(),
+                NamedRecord.newBuilder().setId(8L).setName("TRACK_8").build(),
+                NamedRecord.newBuilder().setId(2L).setName("TRACK_2").build(),
+                NamedRecord.newBuilder().setId(7L).setName("TRACK_7").build()
+        );
+
+        Assert.assertThat(trackNames, IsIterableContainingInAnyOrder.containsInAnyOrder(expectedTrackNames.toArray()));
+    }
+
+    @Test
+    void testAlbumNameResolving() {
+        final ReadOnlyKeyValueStore<Long, String> nameTable =
+                this.testTopology.getTestDriver().getKeyValueStore(RecommenderMain.storeNames.get(FieldType.ALBUM));
+
+        final List<Long> trackIds = List.of(4L, 8L, 2L, 7L);
+        final List<NamedRecord> trackNames = trackIds.stream()
+                .map(id -> new NamedRecord(id, nameTable.get(id)))
+                .collect(Collectors.toList());
+
+        final List<NamedRecord> expectedTrackNames = List.of(
+                NamedRecord.newBuilder().setId(4L).setName("ALBUM_4").build(),
+                NamedRecord.newBuilder().setId(8L).setName("ALBUM_8").build(),
+                NamedRecord.newBuilder().setId(2L).setName("ALBUM_2").build(),
+                NamedRecord.newBuilder().setId(7L).setName("ALBUM_7").build()
+        );
+
+        Assert.assertThat(trackNames, IsIterableContainingInAnyOrder.containsInAnyOrder(expectedTrackNames.toArray()));
+    }
+
+    @Test
+    void testArtistNameResolving() {
+        final ReadOnlyKeyValueStore<Long, String> nameTable =
+                this.testTopology.getTestDriver().getKeyValueStore(RecommenderMain.storeNames.get(FieldType.ARTIST));
+
+        final List<Long> trackIds = List.of(4L, 8L, 2L, 7L);
+        final List<NamedRecord> trackNames = trackIds.stream()
+                .map(id -> new NamedRecord(id, nameTable.get(id)))
+                .collect(Collectors.toList());
+
+        final List<NamedRecord> expectedTrackNames = List.of(
+                NamedRecord.newBuilder().setId(4L).setName("ARTIST_4").build(),
+                NamedRecord.newBuilder().setId(8L).setName("ARTIST_8").build(),
+                NamedRecord.newBuilder().setId(2L).setName("ARTIST_2").build(),
+                NamedRecord.newBuilder().setId(7L).setName("ARTIST_7").build()
+        );
+
+        Assert.assertThat(trackNames, IsIterableContainingInAnyOrder.containsInAnyOrder(expectedTrackNames.toArray()));
     }
 
     EnumMap<FieldType, BipartiteGraph> getGraphMap() {
