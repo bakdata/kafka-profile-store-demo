@@ -5,7 +5,7 @@ metadata:
   labels:
     app: profile-store-core
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       app: profile-store-core
