@@ -90,7 +90,6 @@ public class RestResource {
     }
 
 
-    @XmlRootElement
     @AllArgsConstructor
     @Setter
     @Getter
