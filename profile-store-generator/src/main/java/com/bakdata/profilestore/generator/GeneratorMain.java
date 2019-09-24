@@ -47,6 +47,7 @@ public final class GeneratorMain {
             final String albumTopic = res.getString("albumTopic");
             final String artistTopic = res.getString("artistTopic");
             final String trackTopic = res.get("trackTopic");
+            final boolean shouldDrawRandom = res.getBoolean("shouldDrawRandom");
 
             final Properties props = new Properties();
             props.setProperty(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
@@ -57,24 +58,27 @@ public final class GeneratorMain {
             final SpecificAvroSerializer<ListeningEvent> listeningEventSerializer = new SpecificAvroSerializer<>();
             listeningEventSerializer.configure(serdeConfig, false);
 
-            final KafkaProducer<Long, ListeningEvent> listeningEventProducer = new KafkaProducer<Long, ListeningEvent>(props,
-                    Serdes.Long().serializer(), listeningEventSerializer);
+            final KafkaProducer<Long, ListeningEvent> listeningEventProducer =
+                    new KafkaProducer<Long, ListeningEvent>(props,
+                            Serdes.Long().serializer(), listeningEventSerializer);
 
             System.out.println("loading artists..");
-            final List<FieldRecord> artists = loadFile(ARTISTSFILENAME, strings -> new FieldRecord(Long.parseLong(strings[0]),
-                    strings[1]));
+            final List<FieldRecord> artists =
+                    loadFile(ARTISTSFILENAME, strings -> new FieldRecord(Long.parseLong(strings[0]),
+                            strings[1]));
             System.out.println("loading albums..");
-            final List<FieldRecord> albums = loadFile(ALBUMSFILENAME, strings -> new FieldRecord(Long.parseLong(strings[0]),
-                    strings[1]));
+            final List<FieldRecord> albums =
+                    loadFile(ALBUMSFILENAME, strings -> new FieldRecord(Long.parseLong(strings[0]),
+                            strings[1]));
             System.out.println("loading tracks..");
-            final List<FieldRecord> tracks = loadFile(TRACKSFILENAME, strings -> new FieldRecord(Long.parseLong(strings[0]),
-                    strings[1]));
+            final List<FieldRecord> tracks =
+                    loadFile(TRACKSFILENAME, strings -> new FieldRecord(Long.parseLong(strings[0]),
+                            strings[1]));
             System.out.println("loading listening events...");
             final List<ListeningEvent> listeningEvents =
                     loadFile(LISTENINGEVENTSFILENAME, strings -> new ListeningEvent(Long.parseLong(strings[0]),
                             Long.parseLong(strings[1]), Long.parseLong(strings[2]), Long.parseLong(strings[3]),
                             new DateTime(Long.parseLong(strings[4]))));
-
 
             System.out.println("filling albums topic...");
             fillInformationTopics(albumTopic, albums, props, serdeConfig);
@@ -84,29 +88,55 @@ public final class GeneratorMain {
             fillInformationTopics(trackTopic, tracks, props, serdeConfig);
 
             System.out.println("filling listening events topic...");
-            final Random random = new Random();
-            while (true) {
-                final ListeningEvent listeningEvent = listeningEvents.get(random.nextInt(listeningEvents.size()));
-                listeningEvent.setUserId(ThreadLocalRandom.current().nextLong(5000));
-                listeningEvent.setTimestamp(new DateTime(System.currentTimeMillis() / 1000L)); //override original timestamp
-                System.out.println("Writing listening event: " + listeningEvent.getUserId() + ","
-                        + listeningEvent.getTrackId() + "," + listeningEvent.getTimestamp());
-
-                listeningEventProducer.send(new ProducerRecord<Long, ListeningEvent>(listeningEventTopic, listeningEvent.getUserId(), listeningEvent));
-                Thread.sleep(100L);
+            if (shouldDrawRandom) {
+                fillListeningEventTopicWithRandomDraws(listeningEvents, listeningEventProducer, listeningEventTopic);
+            } else {
+                fillListeningEventTopic(listeningEvents, listeningEventProducer, listeningEventTopic);
             }
+
 
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
+    private static void fillListeningEventTopic(final List<ListeningEvent> listeningEvents,
+            final KafkaProducer<Long, ListeningEvent> listeningEventProducer, final String listeningEventTopic) {
+        for (final ListeningEvent listeningEvent : listeningEvents) {
+            System.out.println("Writing listening event: " + listeningEvent.getUserId() + ","
+                    + listeningEvent.getTrackId() + "," + listeningEvent.getTimestamp());
+            listeningEventProducer
+                    .send(new ProducerRecord<Long, ListeningEvent>(listeningEventTopic, listeningEvent.getUserId(),
+                            listeningEvent));
+        }
+        listeningEventProducer.close();
+    }
 
-    static  <T extends SpecificRecord> void fillInformationTopics(String topicName, List<T> events, Properties props, Map<String, String> serdeConfig) {
+    private static void fillListeningEventTopicWithRandomDraws(final List<ListeningEvent> listeningEvents,
+            final KafkaProducer<Long, ListeningEvent> listeningEventProducer, final String listeningEventTopic)
+            throws InterruptedException {
+        final Random random = new Random();
+        while (true) {
+            final ListeningEvent listeningEvent = listeningEvents.get(random.nextInt(listeningEvents.size()));
+            listeningEvent.setUserId(ThreadLocalRandom.current().nextLong(5000));
+            listeningEvent.setTimestamp(new DateTime(System.currentTimeMillis() / 1000L)); //override original timestamp
+            System.out.println("Writing listening event: " + listeningEvent.getUserId() + ","
+                    + listeningEvent.getTrackId() + "," + listeningEvent.getTimestamp());
+
+            listeningEventProducer
+                    .send(new ProducerRecord<Long, ListeningEvent>(listeningEventTopic, listeningEvent.getUserId(),
+                            listeningEvent));
+            Thread.sleep(100L);
+        }
+    }
+
+
+    private static <T extends SpecificRecord> void fillInformationTopics(final String topicName, final List<T> events,
+            final Properties props, final Map<String, String> serdeConfig) {
         final SpecificAvroSerializer<T> eventSerializer = new SpecificAvroSerializer<T>();
         eventSerializer.configure(serdeConfig, false);
-        final KafkaProducer<Long, T> eventProducer = new KafkaProducer<Long, T>(props, Serdes.Long().serializer(), eventSerializer);
-
+        final KafkaProducer<Long, T> eventProducer =
+                new KafkaProducer<Long, T>(props, Serdes.Long().serializer(), eventSerializer);
 
         Long count = 0L;
         for (final T nextEvent : events) {
@@ -182,6 +212,14 @@ public final class GeneratorMain {
                 .type(String.class)
                 .metavar("ARTIST-TOPIC")
                 .dest("artistTopic");
+
+        parser.addArgument("--random-drawing")
+                .action(store())
+                .required(false)
+                .type(Boolean.class)
+                .setDefault(false)
+                .metavar("RANDOM-DRAWING")
+                .dest("shouldDrawRandom");
 
         return parser;
     }
