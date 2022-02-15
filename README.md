@@ -1,6 +1,6 @@
 # Implementing a Queryable User Profile Store using Kafka Streams
 
-This project provides the source code for our blog post on [Medium](https://medium.com/TODO).
+This project provides the source code for [our blog post on Medium](https://medium.com/bakdata/implementing-a-queryable-user-profile-store-using-kafka-streams-a7dd2c0b2a54).
 It contains an extensible and queryable user profile store that is updated in real time and built with Kafka Streams.
 
 ## Getting Started
